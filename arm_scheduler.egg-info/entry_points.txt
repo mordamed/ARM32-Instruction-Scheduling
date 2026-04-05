@@ -1,0 +1,2 @@
+[console_scripts]
+arm-scheduler = experiments.run_all:main

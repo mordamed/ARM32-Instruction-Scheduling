@@ -1,0 +1,22 @@
+\begin{thebibliography}{3}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{{Google LLC}(2024)}]{ortools}
+{Google LLC}. 2024.
+\newblock {OR-Tools}: Open Source Software for Combinatorial Optimization.
+\newblock \url{https://developers.google.com/optimization}.
+\newblock Version 9.x.
+
+\bibitem[{Kocher, Jaffe, and Jun(1999)}]{kocher1999}
+Kocher, P.; Jaffe, J.; and Jun, B. 1999.
+\newblock Differential Power Analysis.
+\newblock In \emph{Advances in Cryptology -- CRYPTO '99}, volume 1666 of
+  \emph{Lecture Notes in Computer Science}, 388--397. Springer, Berlin,
+  Heidelberg.
+
+\bibitem[{Ullman(1975)}]{ullman1975}
+Ullman, J.~D. 1975.
+\newblock NP-complete scheduling problems.
+\newblock \emph{Journal of Computer and System Sciences}, 10(3): 384--393.
+
+\end{thebibliography}

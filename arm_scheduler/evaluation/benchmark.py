@@ -1,0 +1,294 @@
+"""
+benchmark.py — Experimental evaluation runner with parallel execution.
+
+Runs all three schedulers (A*, CSP, MDP) on synthetic ARM32 blocks of sizes
+[10, 30, 50] with multiple random seeds, using multiprocessing for speed.
+
+Each run measures:
+  - wall_time    : Scheduling inference time (seconds)
+  - train_time   : MDP training time (seconds, 0 for A*/CSP)
+  - total_cycles : Length of the produced schedule
+  - n_nops       : NOP slots inserted
+  - n_violations : Security constraint violations (0 = valid)
+  - backend      : Solver backend used (ortools/dqn/tabular/...)
+
+Results exported to:
+  - experiments/results/benchmark_results.csv
+  - experiments/results/benchmark_summary.json
+"""
+
+from __future__ import annotations
+
+import json
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import pandas as pd
+from tqdm import tqdm
+
+from ..core.generator import generate_block
+from ..core.instruction import validate_schedule
+from ..core.pipeline import PipelineState
+from ..solvers.astar import AStarScheduler
+from ..solvers.csp import CSPScheduler
+from ..solvers.mdp import MDPScheduler
+
+
+# ---------------------------------------------------------------------------
+# Result dataclass
+# ---------------------------------------------------------------------------
+
+@dataclass
+class BenchmarkResult:
+    method: str
+    n_instructions: int
+    seed: int
+    total_cycles: int
+    n_nops: int
+    n_violations: int
+    wall_time: float
+    train_time: float
+    optimal: bool
+    valid: bool
+    backend: str
+
+
+# ---------------------------------------------------------------------------
+# Single-run function (must be module-level for multiprocessing pickling)
+# ---------------------------------------------------------------------------
+
+def _run_once(
+    method: str,
+    n: int,
+    seed: int,
+    k: int,
+    mdp_episodes: int,
+    mdp_stochastic: bool,
+) -> BenchmarkResult:
+    """Run one solver on one block. Returns BenchmarkResult."""
+    instructions = generate_block(n=n, seed=seed)
+    predecessors = PipelineState(instructions, k).predecessors
+    train_time = 0.0
+    backend = method
+    optimal = False
+
+    try:
+        if method == "astar":
+            solver = AStarScheduler(k=k)
+            schedule, total_cycles, stats = solver.schedule(instructions)
+            optimal = stats.get("optimal", False)
+            backend = stats.get("method", "astar")
+
+        elif method == "csp":
+            solver = CSPScheduler(k=k)
+            schedule, total_cycles, stats = solver.schedule(instructions)
+            optimal = stats.get("optimal", False)
+            backend = stats.get("backend", "csp")
+
+        elif method == "mdp":
+            solver = MDPScheduler(k=k, n_episodes=mdp_episodes, stochastic=mdp_stochastic)
+            t_train = time.perf_counter()
+            solver.train(instructions)
+            train_time = time.perf_counter() - t_train
+
+            t_infer = time.perf_counter()
+            schedule, total_cycles, stats = solver.schedule(instructions)
+            stats["wall_time"] = time.perf_counter() - t_infer
+            backend = stats.get("backend", "mdp")
+        else:
+            raise ValueError(f"Unknown method: {method}")
+
+        wall_time = stats.get("wall_time", 0.0)
+        n_nops = stats.get("n_nops", sum(1 for _, i in schedule if i is None))
+
+        valid, errors = validate_schedule(schedule, instructions, predecessors, k)
+        n_violations = sum(1 for e in errors if "Security" in e)
+
+    except Exception as exc:
+        return BenchmarkResult(
+            method=method, n_instructions=n, seed=seed,
+            total_cycles=-1, n_nops=-1, n_violations=-1,
+            wall_time=-1.0, train_time=-1.0,
+            optimal=False, valid=False, backend=f"ERROR: {exc}",
+        )
+
+    return BenchmarkResult(
+        method=method, n_instructions=n, seed=seed,
+        total_cycles=total_cycles, n_nops=n_nops,
+        n_violations=n_violations, wall_time=wall_time,
+        train_time=train_time, optimal=optimal,
+        valid=valid, backend=backend,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Main benchmark runner
+# ---------------------------------------------------------------------------
+
+def run_benchmark(
+    sizes: List[int] = [10, 30, 50],
+    seeds: List[int] = [42, 43, 44],
+    k: int = 3,
+    methods: List[str] = ["astar", "csp", "mdp"],
+    mdp_episodes: int = 5_000,
+    mdp_stochastic: bool = False,
+    output_dir: str = "experiments/results",
+    verbose: bool = True,
+    n_jobs: int = 1,
+) -> pd.DataFrame:
+    """Run the full comparative benchmark.
+
+    Parameters
+    ----------
+    sizes      : Block sizes to benchmark.
+    seeds      : Random seeds (one run per seed × size × method).
+    k          : Security distance parameter.
+    methods    : Solvers to include.
+    n_jobs     : Parallel workers (1 = sequential, -1 = all CPUs).
+                 Note: MDP runs are always sequential (GPU context).
+    """
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    # Build job list — MDP last (so we can batch train per size)
+    non_mdp = [(m, n, s) for m in methods if m != "mdp"
+               for n in sizes for s in seeds]
+    mdp_jobs = [(m, n, s) for m in methods if m == "mdp"
+                for n in sizes for s in seeds]
+    combos = non_mdp + mdp_jobs
+
+    # Determine parallelism
+    import multiprocessing as mp
+    import os
+    if n_jobs == -1:
+        n_jobs = max(1, os.cpu_count() - 1)
+    # MDP with DQN cannot be parallelised (PyTorch CUDA context is not fork-safe)
+    # So we split the work
+    can_parallel = [c for c in combos if c[0] != "mdp"]
+    must_serial = [c for c in combos if c[0] == "mdp"]
+
+    results: List[BenchmarkResult] = []
+    pbar_total = len(combos)
+
+    with tqdm(total=pbar_total, desc="Benchmarking", unit="run", disable=not verbose) as pbar:
+
+        # ----- Parallel A* / CSP -----
+        if n_jobs > 1 and can_parallel:
+            with mp.Pool(processes=min(n_jobs, len(can_parallel))) as pool:
+                futures = [
+                    pool.apply_async(
+                        _run_once,
+                        args=(m, n, s, k, mdp_episodes, mdp_stochastic)
+                    )
+                    for m, n, s in can_parallel
+                ]
+                for (m, n, s), fut in zip(can_parallel, futures):
+                    result = fut.get()
+                    results.append(result)
+                    if verbose:
+                        pbar.write(
+                            f"  {m:6s}  n={n:2d}  seed={s}"
+                            f"  cycles={result.total_cycles:4d}"
+                            f"  nops={result.n_nops:3d}"
+                            f"  viol={result.n_violations}"
+                            f"  t={result.wall_time:.3f}s"
+                            f"  [{result.backend}]"
+                        )
+                    pbar.update(1)
+        else:
+            for m, n, s in can_parallel:
+                pbar.set_description(f"{m:6s}  n={n:2d}  seed={s}")
+                result = _run_once(m, n, s, k, mdp_episodes, mdp_stochastic)
+                results.append(result)
+                if verbose:
+                    pbar.write(
+                        f"  {m:6s}  n={n:2d}  seed={s}"
+                        f"  cycles={result.total_cycles:4d}"
+                        f"  nops={result.n_nops:3d}"
+                        f"  viol={result.n_violations}"
+                        f"  t={result.wall_time:.3f}s"
+                        f"  [{result.backend}]"
+                    )
+                pbar.update(1)
+
+        # ----- Sequential MDP -----
+        for m, n, s in must_serial:
+            pbar.set_description(f"{m:6s}  n={n:2d}  seed={s}")
+            result = _run_once(m, n, s, k, mdp_episodes, mdp_stochastic)
+            results.append(result)
+            if verbose:
+                pbar.write(
+                    f"  {m:6s}  n={n:2d}  seed={s}"
+                    f"  cycles={result.total_cycles:4d}"
+                    f"  nops={result.n_nops:3d}"
+                    f"  viol={result.n_violations}"
+                    f"  t={result.wall_time:.3f}s"
+                    + (f"  train={result.train_time:.1f}s" if result.train_time > 0 else "")
+                    + f"  [{result.backend}]"
+                )
+            pbar.update(1)
+
+    # Build DataFrame
+    df = pd.DataFrame([asdict(r) for r in results])
+
+    csv_path = Path(output_dir) / "benchmark_results.csv"
+    df.to_csv(csv_path, index=False)
+    if verbose:
+        print(f"\nResults → {csv_path}")
+
+    summary = _build_summary(df, methods, sizes)
+    json_path = Path(output_dir) / "benchmark_summary.json"
+    with open(json_path, "w") as fh:
+        json.dump(summary, fh, indent=2)
+    if verbose:
+        print(f"Summary → {json_path}")
+
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Summary + table helpers
+# ---------------------------------------------------------------------------
+
+def _build_summary(df, methods, sizes):
+    summary = {}
+    for method in methods:
+        summary[method] = {}
+        for n in sizes:
+            sub = df[(df["method"] == method) & (df["n_instructions"] == n)]
+            if sub.empty:
+                continue
+            summary[method][str(n)] = {
+                "total_cycles_mean": float(sub["total_cycles"].mean()),
+                "total_cycles_std":  float(sub["total_cycles"].std()),
+                "n_nops_mean":       float(sub["n_nops"].mean()),
+                "wall_time_mean":    float(sub["wall_time"].mean()),
+                "train_time_mean":   float(sub["train_time"].mean()),
+                "n_violations_mean": float(sub["n_violations"].mean()),
+                "valid_rate":        float(sub["valid"].mean()),
+            }
+    return summary
+
+
+def print_summary_table(df: pd.DataFrame) -> None:
+    print("\n" + "=" * 82)
+    print(f"{'Method':8s}  {'n':>4}  {'Cycles (μ±σ)':>18}  {'NOPs':>6}  "
+          f"{'Time (s)':>9}  {'Violations':>10}  {'Valid':>5}")
+    print("=" * 82)
+    for method in df["method"].unique():
+        for n in sorted(df["n_instructions"].unique().tolist()):
+            sub = df[(df["method"] == method) & (df["n_instructions"] == n)]
+            if sub.empty:
+                continue
+            std_str = f"{sub['total_cycles'].std():5.1f}" if len(sub) > 1 else "  n/a"
+            print(
+                f"{method:8s}  {n:>4}  "
+                f"{sub['total_cycles'].mean():6.1f} ± {std_str}  "
+                f"{sub['n_nops'].mean():>6.1f}  "
+                f"{sub['wall_time'].mean():>9.4f}  "
+                f"{sub['n_violations'].mean():>10.2f}  "
+                f"{sub['valid'].mean():>5.1%}"
+            )
+        print("-" * 82)
+    print()
