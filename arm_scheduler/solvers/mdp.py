@@ -296,12 +296,37 @@ class DQNAgent:
         instructions: List[Instruction],
         n_episodes: int = DQN_EPISODES,
         verbose: bool = False,
+        run_id: str = None,
     ) -> List[float]:
         env = SchedulerEnv(instructions, self.k, self.stochastic)
         episode_rewards: List[float] = []
         eps = DQN_EPSILON_START
+        start_episode = 0
 
-        pbar = tqdm(range(n_episodes), desc="  DQN Training", leave=False, disable=not verbose, miniters=20)
+        # --- Load Checkpoint ---
+        checkpoint_path = None
+        if run_id:
+            os.makedirs("experiments/checkpoints", exist_ok=True)
+            checkpoint_path = f"experiments/checkpoints/mdp_{run_id}.pt"
+            if os.path.exists(checkpoint_path):
+                try:
+                    checkpoint = torch.load(checkpoint_path, map_location=self.device)
+                    self.model.load_state_dict(checkpoint['model_state_dict'])
+                    self.target_model.load_state_dict(checkpoint['model_state_dict'])
+                    self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                    episode_rewards = checkpoint.get('episode_rewards', [])
+                    eps = checkpoint.get('epsilon', DQN_EPSILON_START)
+                    start_episode = checkpoint.get('episode', 0) + 1
+                    if verbose:
+                        print(f"\n[Checkpoint] Resuming '{run_id}' from episode {start_episode}")
+                except Exception as e:
+                    if verbose:
+                        print(f"\n[Checkpoint] Error loading {checkpoint_path}: {e}. Starting from scratch.")
+
+        if start_episode >= n_episodes:
+            return episode_rewards
+
+        pbar = tqdm(range(start_episode, n_episodes), desc="  DQN Training", leave=False, disable=not verbose, miniters=20)
         for ep in pbar:
             state_feat = env.reset()
             done = False
@@ -339,6 +364,16 @@ class DQNAgent:
             if (ep + 1) % 20 == 0:
                 avg = np.mean(episode_rewards[-100:]) if len(episode_rewards) >= 100 else np.mean(episode_rewards)
                 pbar.set_postfix(avg_rew=f"{avg:.1f}", eps=f"{eps:.3f}", dev=str(self.device))
+
+            # --- Save Checkpoint ---
+            if checkpoint_path and (ep + 1) % 500 == 0:
+                torch.save({
+                    'episode': ep,
+                    'model_state_dict': self.model.state_dict(),
+                    'optimizer_state_dict': self.optimizer.state_dict(),
+                    'epsilon': eps,
+                    'episode_rewards': episode_rewards,
+                }, checkpoint_path)
 
         return episode_rewards
 
@@ -593,13 +628,19 @@ class MDPScheduler:
         self,
         instructions: List[Instruction],
         verbose: bool = False,
+        run_id: str = None,
     ) -> List[float]:
         """Train the agent on *instructions*. Returns episode reward list."""
+        if self._agent is None:
+            if self.use_dqn:
+                self._agent = DQNAgent(k=self.k, stochastic=self.stochastic)
+            else:
+                self._agent = QLearningAgent(k=self.k, stochastic=self.stochastic)
+        
         if self.use_dqn:
-            self._agent = DQNAgent(k=self.k, stochastic=self.stochastic)
+            return self._agent.train(instructions, self.n_episodes, verbose=verbose, run_id=run_id)
         else:
-            self._agent = QLearningAgent(k=self.k, stochastic=self.stochastic)
-        return self._agent.train(instructions, self.n_episodes, verbose=verbose)
+            return self._agent.train(instructions, self.n_episodes, verbose=verbose)
 
     def schedule(
         self,
