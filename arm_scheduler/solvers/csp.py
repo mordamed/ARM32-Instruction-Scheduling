@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 from ..core.instruction import Instruction, ShareType
 from ..core.pipeline import PipelineState
 
-TIME_LIMIT = 30.0   # seconds per solve call
+TIME_LIMIT = 15.0   # seconds per solve call (shortened to prevent benchmark stalls)
 
 # ---------------------------------------------------------------------------
 # Backend detection
@@ -127,7 +127,7 @@ class CSPScheduler:
         # ---- Warm-start: greedy gives a tight upper bound ----
         greedy_sched, greedy_total = self._greedy_fallback(state, instructions)
         # Any optimal solution fits within [0, greedy_total)
-        t_max = greedy_total + 1
+        t_max = greedy_total
 
         # ---- Decision variables ----
         t = [cp.new_int_var(0, t_max - 1, f"t_{i}") for i in range(n)]
@@ -171,7 +171,8 @@ class CSPScheduler:
         solver = _cp_model.CpSolver()
         remaining = max(self.time_limit - (time.perf_counter() - t0), 1.0)
         solver.parameters.max_time_in_seconds = min(remaining, self.time_limit)
-        solver.parameters.num_workers = 4
+        # num_workers = 1 to avoid thread oversubscription when run in multiprocessing pool
+        solver.parameters.num_workers = 1
         solver.parameters.log_search_progress = False
 
         status = solver.solve(cp)
@@ -183,7 +184,15 @@ class CSPScheduler:
                 assignment, instructions, real_makespan
             )
             optimal = status == _cp_model.OPTIMAL
-            return schedule_out, real_makespan, {"optimal": optimal}
+            return schedule_out, real_makespan, {
+                "method": "csp",
+                "backend": "ortools_cpsat",
+                "optimal": optimal,
+                "total_cycles": real_makespan,
+                "n_nops": sum(1 for _, i in schedule_out if i is None),
+                "n_violations": 0,
+                "wall_time": time.perf_counter() - t0,
+            }
         else:
             # Timeout without feasible solution → return greedy guarantee
             return greedy_sched, greedy_total, {"optimal": False}

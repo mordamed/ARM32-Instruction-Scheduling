@@ -15,7 +15,7 @@ arm_scheduler/evaluation/__init__.py
 arm_scheduler/evaluation/benchmark.py
 arm_scheduler/evaluation/visualizer.py
 arm_scheduler/solvers/__init__.py
-arm_scheduler/solvers/astar.py
+arm_scheduler/solvers/bayesian.py
 arm_scheduler/solvers/csp.py
 arm_scheduler/solvers/mdp.py
 experiments/__init__.py

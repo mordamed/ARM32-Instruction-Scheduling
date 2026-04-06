@@ -31,7 +31,7 @@ from tqdm import tqdm
 from ..core.generator import generate_block
 from ..core.instruction import validate_schedule
 from ..core.pipeline import PipelineState
-from ..solvers.astar import AStarScheduler
+from ..solvers.bayesian import BayesianScheduler, compute_total_expected_leakage
 from ..solvers.csp import CSPScheduler
 from ..solvers.mdp import MDPScheduler
 
@@ -48,6 +48,7 @@ class BenchmarkResult:
     total_cycles: int
     n_nops: int
     n_violations: int
+    expected_leakage: float
     wall_time: float
     train_time: float
     optimal: bool
@@ -66,6 +67,7 @@ def _run_once(
     k: int,
     mdp_episodes: int,
     mdp_stochastic: bool,
+    verbose: bool = False,
 ) -> BenchmarkResult:
     """Run one solver on one block. Returns BenchmarkResult."""
     instructions = generate_block(n=n, seed=seed)
@@ -75,11 +77,11 @@ def _run_once(
     optimal = False
 
     try:
-        if method == "astar":
-            solver = AStarScheduler(k=k)
+        if method == "bayesian":
+            solver = BayesianScheduler()
             schedule, total_cycles, stats = solver.schedule(instructions)
             optimal = stats.get("optimal", False)
-            backend = stats.get("method", "astar")
+            backend = stats.get("method", "bayesian")
 
         elif method == "csp":
             solver = CSPScheduler(k=k)
@@ -90,7 +92,7 @@ def _run_once(
         elif method == "mdp":
             solver = MDPScheduler(k=k, n_episodes=mdp_episodes, stochastic=mdp_stochastic)
             t_train = time.perf_counter()
-            solver.train(instructions)
+            solver.train(instructions, verbose=verbose)
             train_time = time.perf_counter() - t_train
 
             t_infer = time.perf_counter()
@@ -105,11 +107,15 @@ def _run_once(
 
         valid, errors = validate_schedule(schedule, instructions, predecessors, k)
         n_violations = sum(1 for e in errors if "Security" in e)
+        
+        # Calculate expected leakage for ALL approaches
+        expected_leakage = compute_total_expected_leakage(schedule)
 
     except Exception as exc:
         return BenchmarkResult(
             method=method, n_instructions=n, seed=seed,
             total_cycles=-1, n_nops=-1, n_violations=-1,
+            expected_leakage=-1.0,
             wall_time=-1.0, train_time=-1.0,
             optimal=False, valid=False, backend=f"ERROR: {exc}",
         )
@@ -117,7 +123,8 @@ def _run_once(
     return BenchmarkResult(
         method=method, n_instructions=n, seed=seed,
         total_cycles=total_cycles, n_nops=n_nops,
-        n_violations=n_violations, wall_time=wall_time,
+        n_violations=n_violations, expected_leakage=expected_leakage, 
+        wall_time=wall_time,
         train_time=train_time, optimal=optimal,
         valid=valid, backend=backend,
     )
@@ -131,7 +138,7 @@ def run_benchmark(
     sizes: List[int] = [10, 30, 50],
     seeds: List[int] = [42, 43, 44],
     k: int = 3,
-    methods: List[str] = ["astar", "csp", "mdp"],
+    methods: List[str] = ["bayesian", "csp", "mdp"],
     mdp_episodes: int = 5_000,
     mdp_stochastic: bool = False,
     output_dir: str = "experiments/results",
@@ -215,7 +222,7 @@ def run_benchmark(
         # ----- Sequential MDP -----
         for m, n, s in must_serial:
             pbar.set_description(f"{m:6s}  n={n:2d}  seed={s}")
-            result = _run_once(m, n, s, k, mdp_episodes, mdp_stochastic)
+            result = _run_once(m, n, s, k, mdp_episodes, mdp_stochastic, verbose=True)
             results.append(result)
             if verbose:
                 pbar.write(
@@ -266,16 +273,17 @@ def _build_summary(df, methods, sizes):
                 "wall_time_mean":    float(sub["wall_time"].mean()),
                 "train_time_mean":   float(sub["train_time"].mean()),
                 "n_violations_mean": float(sub["n_violations"].mean()),
+                "expected_leak_mean": float(sub["expected_leakage"].mean()),
                 "valid_rate":        float(sub["valid"].mean()),
             }
     return summary
 
 
 def print_summary_table(df: pd.DataFrame) -> None:
-    print("\n" + "=" * 82)
+    print("\n" + "=" * 94)
     print(f"{'Method':8s}  {'n':>4}  {'Cycles (μ±σ)':>18}  {'NOPs':>6}  "
-          f"{'Time (s)':>9}  {'Violations':>10}  {'Valid':>5}")
-    print("=" * 82)
+          f"{'Time (s)':>9}  {'Violations':>10}  {'Leakage(E)':>10}  {'Valid':>5}")
+    print("=" * 94)
     for method in df["method"].unique():
         for n in sorted(df["n_instructions"].unique().tolist()):
             sub = df[(df["method"] == method) & (df["n_instructions"] == n)]
@@ -288,7 +296,8 @@ def print_summary_table(df: pd.DataFrame) -> None:
                 f"{sub['n_nops'].mean():>6.1f}  "
                 f"{sub['wall_time'].mean():>9.4f}  "
                 f"{sub['n_violations'].mean():>10.2f}  "
+                f"{sub['expected_leakage'].mean():>10.2f}  "
                 f"{sub['valid'].mean():>5.1%}"
             )
-        print("-" * 82)
+        print("-" * 94)
     print()

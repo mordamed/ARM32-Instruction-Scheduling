@@ -1,27 +1,48 @@
-﻿# ARM32 Instruction Scheduler for Masked Cryptography
+# ARM32 Instruction Scheduler for Masked Cryptography
 
 **INFO-H410 — Artificial Intelligence | ULB**
 
-A Python post-processor that reorders ARM32 instruction blocks to guarantee a **security distance of k cycles** between instructions manipulating different cryptographic shares, thereby mitigating power/timing side-channel leakages in masked implementations.
+A Python tool that reorders ARM32 instruction blocks to mitigate power/timing side-channel leakages in masked implementations. It balances execution speed with a security risk model.
 
 ---
 
-## Problem Statement
+## Three Scheduling Approaches
 
-In **masked cryptography** (e.g., Boolean masking), a secret s is split into shares A and B such that s = A XOR B. If the compiler places instructions operating on A and B within k pipeline cycles of each other, a power-analysis adversary can recover s through Hamming-distance leakage.
+This project compares three distinct AI methodologies:
 
-This project implements and compares **three AI scheduling approaches** that reorganise a basic block of ARM32 instructions to enforce the k-cycle security property while minimising total execution time.
-
----
-
-## Three Approaches
-
-| | **A* Search** | **CSP** | **MDP (Q-Learning)** |
+| | **A: Bayesian Inference** | **B: CSP (OR-Tools)** | **C: MDP (Deep Q-Learning)** |
 |---|---|---|---|
-| **n<=15** | A* exact (optimal) | backtracking + AC-3 | Tabular Q-Learning |
-| **n>15** | Beam Search (width=500) | iterative T_max | feature-based policy |
-| **Optimal?** | Yes (A* phase) | Yes | Heuristic |
-| **Stochastic?** | No | No | Yes (latency +/-1) |
+| **Paradigm** | Probabilistic Risk Model | Combinatorial Optimization | Reinforcement Learning |
+| **Logic** | Greedy + Risk Threshold ($\tau$) | Constraint Programming (SAT) | Neural Policy (DQN on GPU) |
+| **Security** | Expected Leakage $E(L)$ | Hard Distance $k$ (Safe) | Reward-driven (Heuristic) |
+| **Speed** | Instant (<1ms) | Optimal (~1s) | Real-time Inference (<1ms) |
+
+- **Bayesian**: Models the physical "capacitor discharge" in the pipeline. Injects NOPs only when cumulative risk exceeds $\tau$.
+- **CSP**: Guarantees a strict cycle distance $k$ between different shares. Finds the mathematically shortest possible valid schedule.
+- **MDP**: Trains a neural network to "play" the scheduling game. Learns complex heuristics through thousands of self-play episodes.
+
+---
+
+## Quick Start
+
+### Windows (GPU Enabled)
+If you have an NVIDIA GPU, use the provided batch file for an optimized environment:
+```powershell
+./run_gpu_windows.bat
+```
+
+### Docker
+```bash
+docker build -t arm-scheduler .
+docker run --rm -v "$(pwd)/experiments:/app/experiments" arm-scheduler
+```
+
+### Manual Install
+```bash
+pip install -r requirements.txt
+pip install -e .
+python experiments/run_all.py --methods bayesian csp mdp --k 3
+```
 
 ---
 
@@ -29,67 +50,20 @@ This project implements and compares **three AI scheduling approaches** that reo
 
 ```
 arm_scheduler/
-    core/           instruction.py, pipeline.py, generator.py
-    solvers/        astar.py, csp.py, mdp.py
-    evaluation/     benchmark.py, visualizer.py
-experiments/        run_all.py
-tests/              test_core.py, test_solvers.py
-Dockerfile
-requirements.txt
-```
-
----
-
-## Quick Start
-
-### Docker (Recommended)
-```bash
-docker build -t arm-scheduler .
-docker run --rm -v "C:\Users\tajani\Cours\AI\Project/experiments:/app/experiments" arm-scheduler
-```
-
-### Local Python
-```bash
-pip install -r requirements.txt
-pip install -e .
-python experiments/run_all.py --k 3 --sizes 10 30 50 --seeds 42 43 44
-```
-
-### Quick Smoke Test
-```bash
-python experiments/run_all.py --quick
-```
-
-### Run Tests
-```bash
-pytest tests/ -v
-```
-
----
-
-## CLI Reference
-
-```
-python experiments/run_all.py [OPTIONS]
-
---k INT           Security distance in cycles (default: 3)
---sizes INT...    Block sizes (default: 10 30 50)
---seeds INT...    Random seeds (default: 42 43 44)
---episodes INT    MDP training episodes (default: 5000)
---stochastic      Enable stochastic latency in MDP
---methods STR...  astar csp mdp (default: all)
---quick           Smoke test: n=10, seed=42, episodes=300
---no-plots        Skip figure generation
+    core/           instruction.py (ARM32 ISA), pipeline.py (RAW/Security Logic)
+    solvers/        bayesian.py, csp.py, mdp.py
+    evaluation/     benchmark.py, visualizer.py (Graphics)
+experiments/        run_all.py (CLI entry point)
+report/             main.tex (Academic Report)
 ```
 
 ---
 
 ## Security Model
 
-- In-order ARM Cortex-M pipeline (1 instruction/cycle)
-- Constraint: |start(i) - start(j)| >= k for pairs with share(i) != share(j)
-- k is a configurable parameter (default k=3)
-- Static validation applied to every produced schedule
+We model an in-order ARM Cortex-M pipeline. The primary security constraint is the **Temporal Distance** between instructions manipulating different shares (e.g. Share A and Share B).
+- **Strict Model**: $|t_i - t_j| \ge k$.
+- **Probabilistic Model**: $P(Leakage) = f(\Delta t)$, total risk $\sum P < \tau$.
 
 ---
 

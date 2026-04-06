@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1775420620.46268 "main.aux" "main.bbl" "main" 1775423004.96112 0
+["bibtex main"] 1775430933.48547 "main.aux" "main.bbl" "main" 1775430935.08843 0
   "./aaai2026.bst" 1775415902 30207 6eaa2a4f2eed92c930f9e98d689c010a ""
   "./references.bib" 1775414613 2424 a483989f1c6fc3081771d1e2734d955a ""
-  "main.aux" 1775423004 989 5cc3c847307e802952367abf94fecfa3 "pdflatex"
+  "main.aux" 1775430934 970 c9f97d77c00eb318d1d3b7717016fadb "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1775423002.83555 "c:/Users/tajani/Cours/AI/Project/report/main.tex" "main.pdf" "main" 1775423004.96165 0
+["pdflatex"] 1775430933.82454 "c:/Users/tajani/Cours/AI/Project/report/main.tex" "main.pdf" "main" 1775430935.08886 0
   "../experiments/results/fig1_cycles.png" 1775420260 31363 7ceb9c5ff5f866e907430ca07f78eb1a ""
   "../experiments/results/fig2_time.png" 1775420261 35358 ebca09aac2d1b626cdba75abf508f14e ""
   "../experiments/results/fig4_learning_curve.png" 1775420262 68028 8f863bc8d9bbb09ac882e8e1f43a1e9f ""
@@ -114,10 +114,10 @@
   "C:/Users/tajani/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/tajani/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "aaai2026.sty" 1775415909 11802 ebafcca046fa76cd12a651daf05aa669 ""
-  "c:/Users/tajani/Cours/AI/Project/report/main.tex" 1775422732 19356 4052932944c7a5dcc0d511718ef6c7b3 ""
-  "main.aux" 1775423004 989 5cc3c847307e802952367abf94fecfa3 "pdflatex"
-  "main.bbl" 1775420620 794 364274090cc6bb5df0217bab70e8805d "bibtex main"
-  "main.tex" 1775422732 19356 4052932944c7a5dcc0d511718ef6c7b3 ""
+  "c:/Users/tajani/Cours/AI/Project/report/main.tex" 1775430931 19206 16937f61af7dfa3e539d344c71a1cd03 ""
+  "main.aux" 1775430934 970 c9f97d77c00eb318d1d3b7717016fadb "pdflatex"
+  "main.bbl" 1775430933 794 364274090cc6bb5df0217bab70e8805d "bibtex main"
+  "main.tex" 1775430931 19206 16937f61af7dfa3e539d344c71a1cd03 ""
   (generated)
   "main.aux"
   "main.log"

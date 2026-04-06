@@ -1,89 +1,14 @@
 {
-  "astar": {
+  "bayesian": {
     "10": {
-      "total_cycles_mean": 58.0,
-      "total_cycles_std": 1.0,
-      "n_nops_mean": 48.0,
-      "wall_time_mean": 0.0033576666998366513,
+      "total_cycles_mean": 12.0,
+      "total_cycles_std": NaN,
+      "n_nops_mean": 2.0,
+      "wall_time_mean": 0.00010720011778175831,
       "train_time_mean": 0.0,
       "n_violations_mean": 0.0,
+      "expected_leak_mean": 0.1,
       "valid_rate": 1.0
-    },
-    "30": {
-      "total_cycles_mean": 127.33333333333333,
-      "total_cycles_std": 0.5773502691896257,
-      "n_nops_mean": 97.33333333333333,
-      "wall_time_mean": 0.9349012665916234,
-      "train_time_mean": 0.0,
-      "n_violations_mean": 0.0,
-      "valid_rate": 1.0
-    },
-    "50": {
-      "total_cycles_mean": 226.66666666666666,
-      "total_cycles_std": 58.32095106677645,
-      "n_nops_mean": 176.66666666666666,
-      "wall_time_mean": 2.464401633323481,
-      "train_time_mean": 0.0,
-      "n_violations_mean": 0.0,
-      "valid_rate": 1.0
-    }
-  },
-  "csp": {
-    "10": {
-      "total_cycles_mean": 58.0,
-      "total_cycles_std": 1.0,
-      "n_nops_mean": 48.0,
-      "wall_time_mean": 0.03845579999809464,
-      "train_time_mean": 0.0,
-      "n_violations_mean": 0.0,
-      "valid_rate": 1.0
-    },
-    "30": {
-      "total_cycles_mean": 121.66666666666667,
-      "total_cycles_std": 1.5275252316519468,
-      "n_nops_mean": 91.66666666666667,
-      "wall_time_mean": 0.1186204666737467,
-      "train_time_mean": 0.0,
-      "n_violations_mean": 0.0,
-      "valid_rate": 1.0
-    },
-    "50": {
-      "total_cycles_mean": 219.66666666666666,
-      "total_cycles_std": 55.73448962117921,
-      "n_nops_mean": 169.66666666666666,
-      "wall_time_mean": 30.045888899903122,
-      "train_time_mean": 0.0,
-      "n_violations_mean": 0.0,
-      "valid_rate": 1.0
-    }
-  },
-  "mdp": {
-    "10": {
-      "total_cycles_mean": 10.0,
-      "total_cycles_std": 0.0,
-      "n_nops_mean": 0.0,
-      "wall_time_mean": 0.001738066707427303,
-      "train_time_mean": 81.32710320005815,
-      "n_violations_mean": 15.666666666666666,
-      "valid_rate": 0.0
-    },
-    "30": {
-      "total_cycles_mean": 30.0,
-      "total_cycles_std": 0.0,
-      "n_nops_mean": 0.0,
-      "wall_time_mean": 0.005228099878877401,
-      "train_time_mean": 252.93802073334032,
-      "n_violations_mean": 103.66666666666667,
-      "valid_rate": 0.0
-    },
-    "50": {
-      "total_cycles_mean": 50.666666666666664,
-      "total_cycles_std": 1.1547005383792517,
-      "n_nops_mean": 0.6666666666666666,
-      "wall_time_mean": 0.020276199948663514,
-      "train_time_mean": 789.9227048000321,
-      "n_violations_mean": 328.6666666666667,
-      "valid_rate": 0.0
     }
   }
 }

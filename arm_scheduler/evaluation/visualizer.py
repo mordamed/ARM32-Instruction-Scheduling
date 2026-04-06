@@ -31,14 +31,14 @@ from ..core.instruction import Instruction, ShareType
 # Style constants
 # ---------------------------------------------------------------------------
 COLORS = {
-    "astar":  "#4C72B0",   # blue
-    "csp":    "#DD8452",   # orange
-    "mdp":    "#55A868",   # green
+    "bayesian": "#4C72B0",   # blue
+    "csp":      "#DD8452",   # orange
+    "mdp":      "#55A868",   # green
 }
 METHOD_LABELS = {
-    "astar": "A* / Beam Search",
-    "csp":   "CSP",
-    "mdp":   "MDP (Q-Learning)",
+    "bayesian": "Bayesian Network",
+    "csp":      "CSP",
+    "mdp":      "MDP (Q-Learning)",
 }
 SHARE_COLORS = {
     ShareType.SHARE_A: "#E24A33",   # red

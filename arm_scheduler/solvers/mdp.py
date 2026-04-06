@@ -52,6 +52,7 @@ from collections import deque
 from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
+from tqdm import tqdm
 
 # ---------------------------------------------------------------------------
 # PyTorch detection + device selection
@@ -300,7 +301,8 @@ class DQNAgent:
         episode_rewards: List[float] = []
         eps = DQN_EPSILON_START
 
-        for ep in range(n_episodes):
+        pbar = tqdm(range(n_episodes), desc="  DQN Training", leave=False, disable=not verbose)
+        for ep in pbar:
             state_feat = env.reset()
             done = False
             ep_reward = 0.0
@@ -334,10 +336,9 @@ class DQNAgent:
             eps = max(DQN_EPSILON_END, eps * DQN_EPSILON_DECAY)
             episode_rewards.append(ep_reward)
 
-            if verbose and (ep + 1) % 500 == 0:
-                avg = np.mean(episode_rewards[-500:])
-                print(f"  Ep {ep+1:5d}/{n_episodes}  avg={avg:7.1f}  ε={eps:.3f}"
-                      f"  device={self.device}")
+            if (ep + 1) % 100 == 0:
+                avg = np.mean(episode_rewards[-100:])
+                pbar.set_postfix(avg_rew=f"{avg:.1f}", eps=f"{eps:.3f}", dev=str(self.device))
 
         return episode_rewards
 
@@ -440,7 +441,8 @@ class DQNAgent:
         nops = sum(1 for _, i in schedule_out if i is None)
         return schedule_out, env.cycle, {
             "method": "dqn",
-            "device": str(self.device),
+            "backend": str(self.device),
+            "optimal": False,
             "total_cycles": env.cycle,
             "n_nops": nops,
             "n_violations": env.n_violations,

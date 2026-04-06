@@ -20,7 +20,7 @@ Output
   experiments/results/fig2_time.png
   experiments/results/fig3_nops.png
   experiments/results/fig4_learning_curve.png
-  experiments/results/fig5_gantt_astar.png
+  experiments/results/fig5_gantt_bayesian.png
   experiments/results/fig5_gantt_csp.png
   experiments/results/fig5_gantt_mdp.png
 """
@@ -38,7 +38,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from arm_scheduler.core.generator import generate_block, describe_block
 from arm_scheduler.evaluation.benchmark import run_benchmark, print_summary_table
 from arm_scheduler.evaluation.visualizer import generate_all_figures, plot_gantt
-from arm_scheduler.solvers.astar import AStarScheduler
+from arm_scheduler.solvers.bayesian import BayesianScheduler
 from arm_scheduler.solvers.csp import CSPScheduler
 from arm_scheduler.solvers.mdp import MDPScheduler
 
@@ -73,8 +73,8 @@ def parse_args() -> argparse.Namespace:
         help="Enable stochastic latency during MDP training.",
     )
     parser.add_argument(
-        "--methods", nargs="+", default=["astar", "csp", "mdp"],
-        choices=["astar", "csp", "mdp"],
+        "--methods", nargs="+", default=["bayesian", "csp", "mdp"],
+        choices=["bayesian", "csp", "mdp"],
         help="Solvers to include.",
     )
     parser.add_argument(
@@ -192,14 +192,6 @@ def main() -> None:
         mdp = MDPScheduler(k=args.k, n_episodes=args.episodes, stochastic=args.stochastic)
         rewards = mdp.train(example_instructions, verbose=True)
 
-    # A* Gantt
-    if "astar" in args.methods:
-        solver = AStarScheduler(k=args.k)
-        sched, _, _ = solver.schedule(example_instructions)
-        example_schedules.append(
-            (sched, example_instructions, "A* Schedule (n=10, seed=42)", "fig5_gantt_astar.png")
-        )
-
     # CSP Gantt
     if "csp" in args.methods:
         solver = CSPScheduler(k=args.k)
@@ -236,6 +228,20 @@ def main() -> None:
                 output_dir=args.output_dir, filename=fname,
             )
             print(f"  Saved: {path}")
+
+        # (1) Bayesian Gantt Chart
+        if "bayesian" in args.methods:
+            try:
+                print("Generating Bayesian Gantt Chart...")
+                block_example = generate_block(n=min(10, args.sizes[0]), seed=args.seeds[0])
+                solver = BayesianScheduler()
+                out, total, _ = solver.schedule(block_example)
+                plot_gantt(out, block_example, 
+                           title=f"Bayesian Schedule (n={len(block_example)}, tau=0.15)",
+                           output_dir=args.output_dir, 
+                           filename="fig5_gantt_bayesian.png")
+            except Exception as e:
+                print(f"  Warning: Could not generate Bayesian Gantt plot: {e}")
 
     print("\n── Done ──")
     print(f"All results are in: {os.path.abspath(args.output_dir)}\n")
