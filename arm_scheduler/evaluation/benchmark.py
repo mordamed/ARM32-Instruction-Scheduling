@@ -144,6 +144,7 @@ def run_benchmark(
     output_dir: str = "experiments/results",
     verbose: bool = True,
     n_jobs: int = 1,
+    resume: bool = True,
 ) -> pd.DataFrame:
     """Run the full comparative benchmark.
 
@@ -155,15 +156,39 @@ def run_benchmark(
     methods    : Solvers to include.
     n_jobs     : Parallel workers (1 = sequential, -1 = all CPUs).
                  Note: MDP runs are always sequential (GPU context).
+    resume     : Whether to skip existing combinations in benchmark_results.csv.
     """
     Path(output_dir).mkdir(parents=True, exist_ok=True)
+    csv_path = Path(output_dir) / "benchmark_results.csv"
+
+    existing_combos = set()
+    if resume and csv_path.exists():
+        try:
+            old_df = pd.read_csv(csv_path)
+            for _, row in old_df.iterrows():
+                existing_combos.add((row["method"], int(row["n_instructions"]), int(row["seed"])))
+            if verbose and existing_combos:
+                print(f"[Resume] Found {len(existing_combos)} completed jobs in {csv_path.name}.")
+        except Exception as e:
+            if verbose:
+                print(f"[Resume] Error reading {csv_path.name}: {e}. Starting fresh.")
+    elif not resume and csv_path.exists():
+        csv_path.unlink()
+
+    def append_result(res: BenchmarkResult):
+        df_res = pd.DataFrame([asdict(res)])
+        if not csv_path.exists():
+            df_res.to_csv(csv_path, index=False)
+        else:
+            df_res.to_csv(csv_path, mode='a', header=False, index=False)
 
     # Build job list — MDP last (so we can batch train per size)
     non_mdp = [(m, n, s) for m in methods if m != "mdp"
-               for n in sizes for s in seeds]
+               for n in sizes for s in seeds if (m, n, s) not in existing_combos]
     mdp_jobs = [(m, n, s) for m in methods if m == "mdp"
-                for n in sizes for s in seeds]
+                for n in sizes for s in seeds if (m, n, s) not in existing_combos]
     combos = non_mdp + mdp_jobs
+
 
     # Determine parallelism
     import multiprocessing as mp
@@ -202,6 +227,7 @@ def run_benchmark(
                         pbar.write(
                             f"  {m:8s}  n={n:2d}  seed={s}  ->  {result.total_cycles} cycles"
                         )
+                    append_result(result)
                     pbar.update(1)
         else:
             for m, n, s in can_parallel:
@@ -212,6 +238,7 @@ def run_benchmark(
                     pbar.write(
                         f"  {m:8s}  n={n:2d}  seed={s}  ->  {result.total_cycles} cycles"
                     )
+                append_result(result)
                 pbar.update(1)
 
         # ----- Sequential MDP -----
@@ -228,13 +255,17 @@ def run_benchmark(
                 pbar.write(
                     f"  {m:8s}  n={n:2d}  seed={s}  ->  {result.total_cycles} cycles (train={result.train_time:.1f}s)"
                 )
+            append_result(result)
             pbar.update(1)
 
-    # Build DataFrame
-    df = pd.DataFrame([asdict(r) for r in results])
+    # Build DataFrame from the combined (old and new) CSV
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+    else:
+        df = pd.DataFrame(columns=[f.name for f in asdict(BenchmarkResult("", 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, False, False, ""))])
+        df.to_csv(csv_path, index=False)
 
-    csv_path = Path(output_dir) / "benchmark_results.csv"
-    df.to_csv(csv_path, index=False)
+
     if verbose:
         print(f"\nResults → {csv_path}")
 

@@ -86,6 +86,10 @@ def parse_args() -> argparse.Namespace:
         help="Quick smoke test: skip large blocks, reduce episodes.",
     )
     parser.add_argument(
+        "--resume", action=argparse.BooleanOptionalAction, default=True,
+        help="Resume benchmark from existing CSV results instead of restarting.",
+    )
+    parser.add_argument(
         "--no-plots", action="store_true",
         help="Skip figure generation (useful in headless CI environments).",
     )
@@ -169,6 +173,7 @@ def main() -> None:
         mdp_stochastic=args.stochastic,
         output_dir=args.output_dir,
         verbose=True,
+        resume=args.resume,
     )
 
     t_bench = time.perf_counter() - t_start
