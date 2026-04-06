@@ -301,7 +301,7 @@ class DQNAgent:
         episode_rewards: List[float] = []
         eps = DQN_EPSILON_START
 
-        pbar = tqdm(range(n_episodes), desc="  DQN Training", leave=False, disable=not verbose)
+        pbar = tqdm(range(n_episodes), desc="  DQN Training", leave=False, disable=not verbose, miniters=20)
         for ep in pbar:
             state_feat = env.reset()
             done = False
@@ -336,8 +336,8 @@ class DQNAgent:
             eps = max(DQN_EPSILON_END, eps * DQN_EPSILON_DECAY)
             episode_rewards.append(ep_reward)
 
-            if (ep + 1) % 100 == 0:
-                avg = np.mean(episode_rewards[-100:])
+            if (ep + 1) % 20 == 0:
+                avg = np.mean(episode_rewards[-100:]) if len(episode_rewards) >= 100 else np.mean(episode_rewards)
                 pbar.set_postfix(avg_rew=f"{avg:.1f}", eps=f"{eps:.3f}", dev=str(self.device))
 
         return episode_rewards

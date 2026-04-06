@@ -178,7 +178,11 @@ def run_benchmark(
     results: List[BenchmarkResult] = []
     pbar_total = len(combos)
 
-    with tqdm(total=pbar_total, desc="Benchmarking", unit="run", disable=not verbose) as pbar:
+    print(f"\n[Phase 1/2] Standard Solvers (Bayesian, CSP)")
+    print(f"Running {len(can_parallel)} parallel jobs on {n_jobs} CPU workers...")
+    print("-" * 60)
+
+    with tqdm(total=pbar_total, desc="Total Progress", unit="run", disable=not verbose) as pbar:
 
         # ----- Parallel A* / CSP -----
         if n_jobs > 1 and can_parallel:
@@ -191,48 +195,38 @@ def run_benchmark(
                     for m, n, s in can_parallel
                 ]
                 for (m, n, s), fut in zip(can_parallel, futures):
+                    pbar.set_description(f"Current: {m} (n={n}, seed={s})")
                     result = fut.get()
                     results.append(result)
                     if verbose:
                         pbar.write(
-                            f"  {m:6s}  n={n:2d}  seed={s}"
-                            f"  cycles={result.total_cycles:4d}"
-                            f"  nops={result.n_nops:3d}"
-                            f"  viol={result.n_violations}"
-                            f"  t={result.wall_time:.3f}s"
-                            f"  [{result.backend}]"
+                            f"  {m:8s}  n={n:2d}  seed={s}  ->  {result.total_cycles} cycles"
                         )
                     pbar.update(1)
         else:
             for m, n, s in can_parallel:
-                pbar.set_description(f"{m:6s}  n={n:2d}  seed={s}")
+                pbar.set_description(f"Current: {m} (n={n}, seed={s})")
                 result = _run_once(m, n, s, k, mdp_episodes, mdp_stochastic)
                 results.append(result)
                 if verbose:
                     pbar.write(
-                        f"  {m:6s}  n={n:2d}  seed={s}"
-                        f"  cycles={result.total_cycles:4d}"
-                        f"  nops={result.n_nops:3d}"
-                        f"  viol={result.n_violations}"
-                        f"  t={result.wall_time:.3f}s"
-                        f"  [{result.backend}]"
+                        f"  {m:8s}  n={n:2d}  seed={s}  ->  {result.total_cycles} cycles"
                     )
                 pbar.update(1)
 
         # ----- Sequential MDP -----
+        if must_serial:
+            print(f"\n[Phase 2/2] Deep Reinforcement Learning (DQN Training)")
+            print(f"Running {len(must_serial)} sequential training sessions on GPU...")
+            print("-" * 60)
+
         for m, n, s in must_serial:
-            pbar.set_description(f"{m:6s}  n={n:2d}  seed={s}")
+            pbar.set_description(f"Training: MDP (n={n}, seed={s})")
             result = _run_once(m, n, s, k, mdp_episodes, mdp_stochastic, verbose=True)
             results.append(result)
             if verbose:
                 pbar.write(
-                    f"  {m:6s}  n={n:2d}  seed={s}"
-                    f"  cycles={result.total_cycles:4d}"
-                    f"  nops={result.n_nops:3d}"
-                    f"  viol={result.n_violations}"
-                    f"  t={result.wall_time:.3f}s"
-                    + (f"  train={result.train_time:.1f}s" if result.train_time > 0 else "")
-                    + f"  [{result.backend}]"
+                    f"  {m:8s}  n={n:2d}  seed={s}  ->  {result.total_cycles} cycles (train={result.train_time:.1f}s)"
                 )
             pbar.update(1)
 
