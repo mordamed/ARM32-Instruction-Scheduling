@@ -92,7 +92,7 @@ def _run_once(
         elif method == "mdp":
             solver = MDPScheduler(k=k, n_episodes=mdp_episodes, stochastic=mdp_stochastic)
             t_train = time.perf_counter()
-            solver.train(instructions, verbose=verbose, run_id=f"n{n}_s{seed}")
+            solver.train(instructions, verbose=verbose, run_id=f"n{n}_s{seed}", n=n, seed=seed)
             train_time = time.perf_counter() - t_train
 
             t_infer = time.perf_counter()

@@ -46,6 +46,7 @@ Reward R :
 
 from __future__ import annotations
 
+import os
 import random
 import time
 from collections import deque
@@ -297,11 +298,14 @@ class DQNAgent:
         n_episodes: int = DQN_EPISODES,
         verbose: bool = False,
         run_id: str = None,
+        n: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> List[float]:
         env = SchedulerEnv(instructions, self.k, self.stochastic)
         episode_rewards: List[float] = []
         eps = DQN_EPSILON_START
         start_episode = 0
+        n = n or len(instructions)
 
         # --- Load Checkpoint ---
         checkpoint_path = None
@@ -326,8 +330,10 @@ class DQNAgent:
         if start_episode >= n_episodes:
             return episode_rewards
 
-        pbar = tqdm(range(start_episode, n_episodes), desc="  DQN Training", leave=False, disable=not verbose, miniters=20)
-        for ep in pbar:
+        if verbose:
+            print(f"  [DQN Train] n={n} seed={seed} | Starting {n_episodes} episodes...")
+
+        for ep in range(start_episode, n_episodes):
             state_feat = env.reset()
             done = False
             ep_reward = 0.0
@@ -361,9 +367,13 @@ class DQNAgent:
             eps = max(DQN_EPSILON_END, eps * DQN_EPSILON_DECAY)
             episode_rewards.append(ep_reward)
 
-            if (ep + 1) % 20 == 0:
-                avg = np.mean(episode_rewards[-100:]) if len(episode_rewards) >= 100 else np.mean(episode_rewards)
-                pbar.set_postfix(avg_rew=f"{avg:.1f}", eps=f"{eps:.3f}", dev=str(self.device))
+            # --- Sparse Logging (every 25%) ---
+            if verbose:
+                step = n_episodes // 4
+                if (step > 0 and ep % step == 0) or (ep == n_episodes - 1):
+                    pct = round((ep / (n_episodes - 1)) * 100) if n_episodes > 1 else 100
+                    avg = np.mean(episode_rewards[-100:]) if episode_rewards else 0.0
+                    print(f"  [DQN Training] n={n} seed={seed} Progress: {pct:3d}% ({ep}/{n_episodes}) | avg_rew={avg:.1f} | eps={eps:.3f}")
 
             # --- Save Checkpoint ---
             if checkpoint_path and (ep + 1) % 500 == 0:
@@ -511,10 +521,16 @@ class QLearningAgent:
         instructions: List[Instruction],
         n_episodes: int = TABULAR_EPISODES,
         verbose: bool = False,
+        n: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> List[float]:
         env = SchedulerEnv(instructions, self.k, self.stochastic)
         episode_rewards: List[float] = []
         eps = TABULAR_EPSILON_START
+        n = n or len(instructions)
+
+        if verbose:
+            print(f"  [Tabular Train] n={n} seed={seed} | Starting {n_episodes} episodes...")
 
         for ep in range(n_episodes):
             state = env.reset()
@@ -548,9 +564,13 @@ class QLearningAgent:
             eps = max(TABULAR_EPSILON_END, eps * TABULAR_EPSILON_DECAY)
             episode_rewards.append(ep_reward)
 
-            if verbose and (ep + 1) % 500 == 0:
-                avg = np.mean(episode_rewards[-500:])
-                print(f"  Ep {ep+1:5d}/{n_episodes}  avg={avg:7.1f}  ε={eps:.3f}  (tabular)")
+            # --- Sparse Logging (every 25%) ---
+            if verbose:
+                step = n_episodes // 4
+                if (step > 0 and ep % step == 0) or (ep == n_episodes - 1):
+                    pct = round((ep / (n_episodes - 1)) * 100) if n_episodes > 1 else 100
+                    avg = np.mean(episode_rewards[-100:]) if episode_rewards else 0.0
+                    print(f"  [Tabular Training] n={n} seed={seed} Progress: {pct:3d}% ({ep}/{n_episodes}) | avg_rew={avg:.1f} | eps={eps:.3f}")
 
         return episode_rewards
 
@@ -629,6 +649,8 @@ class MDPScheduler:
         instructions: List[Instruction],
         verbose: bool = False,
         run_id: str = None,
+        n: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> List[float]:
         """Train the agent on *instructions*. Returns episode reward list."""
         if self._agent is None:
@@ -638,9 +660,9 @@ class MDPScheduler:
                 self._agent = QLearningAgent(k=self.k, stochastic=self.stochastic)
         
         if self.use_dqn:
-            return self._agent.train(instructions, self.n_episodes, verbose=verbose, run_id=run_id)
+            return self._agent.train(instructions, self.n_episodes, verbose=verbose, run_id=run_id, n=n, seed=seed)
         else:
-            return self._agent.train(instructions, self.n_episodes, verbose=verbose)
+            return self._agent.train(instructions, self.n_episodes, verbose=verbose, n=n, seed=seed)
 
     def schedule(
         self,
