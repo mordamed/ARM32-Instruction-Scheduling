@@ -315,8 +315,8 @@ class DQNAgent:
             if os.path.exists(checkpoint_path):
                 try:
                     checkpoint = torch.load(checkpoint_path, map_location=self.device)
-                    self.model.load_state_dict(checkpoint['model_state_dict'])
-                    self.target_model.load_state_dict(checkpoint['model_state_dict'])
+                    self.q_net.load_state_dict(checkpoint['model_state_dict'])
+                    self.target_net.load_state_dict(checkpoint['model_state_dict'])
                     self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                     episode_rewards = checkpoint.get('episode_rewards', [])
                     eps = checkpoint.get('epsilon', DQN_EPSILON_START)
@@ -379,7 +379,7 @@ class DQNAgent:
             if checkpoint_path and (ep + 1) % 500 == 0:
                 torch.save({
                     'episode': ep,
-                    'model_state_dict': self.model.state_dict(),
+                    'model_state_dict': self.q_net.state_dict(),
                     'optimizer_state_dict': self.optimizer.state_dict(),
                     'epsilon': eps,
                     'episode_rewards': episode_rewards,
