@@ -46,7 +46,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from arm_scheduler.core.generator import generate_block
-from arm_scheduler.core.instruction import validate_schedule
+from arm_scheduler.core.instruction import build_dependency_graph, validate_schedule
 from arm_scheduler.solvers.bayesian import compute_total_expected_leakage
 from arm_scheduler.solvers.mdp import MDPScheduler
 
@@ -111,7 +111,9 @@ def run_one(
     backend = stats.get("backend", solver.backend)
 
     expected_leakage = compute_total_expected_leakage(schedule)
-    valid = validate_schedule(schedule, instructions, k=k)
+    predecessors = build_dependency_graph(instructions)
+    ok, _errors = validate_schedule(schedule, instructions, predecessors, k)
+    valid = bool(ok)
 
     return {
         "method": "mdp_tuned",
