@@ -39,9 +39,18 @@ MDP Formulation
 State  S : compact feature vector (6-dim, invariant to block size)
 Action A : choose one ready instruction (or NOP if none valid)
 Reward R :
-  -1    per cycle elapsed
-  -10   per security violation
-  +50   on full completion
+  -1                     per cycle elapsed
+  violation_penalty      per security violation (default -10;
+                         configurable — see Reward shaping note below)
+  +50                    on full completion
+
+Reward shaping note
+-------------------
+With the default violation_penalty=-10, the MDP may learn to *ignore*
+security constraints at large n because the cumulative cycle cost of
+inserting NOPs exceeds the per-violation penalty. Passing a larger
+|penalty| (e.g. -100) to MDPScheduler restores a safety-aware policy.
+See experiments/rerun_mdp_tuned.py for an ablation example.
 """
 
 from __future__ import annotations
@@ -114,10 +123,12 @@ class SchedulerEnv:
         instructions: List[Instruction],
         k: int = 3,
         stochastic: bool = False,
+        violation_penalty: float = -10.0,
     ) -> None:
         self.instructions = instructions
         self.k = k
         self.stochastic = stochastic
+        self.violation_penalty = violation_penalty
         self.n = len(instructions)
         self.pipeline_state = PipelineState(instructions, k)
         self._max_cp = max(self.pipeline_state._critical_path.values()) if instructions else 1
@@ -162,7 +173,7 @@ class SchedulerEnv:
                 action_instr, self.cycle, self.placement
             )
             if violated:
-                reward -= 10.0
+                reward += self.violation_penalty
                 self.n_violations += 1
             self.scheduled.add(action_instr.idx)
             self.finish_times[action_instr.idx] = self.cycle + self._eff_lat[action_instr.idx]
@@ -270,6 +281,7 @@ class DQNAgent:
         replay_size: int = DQN_REPLAY_SIZE,
         target_update: int = DQN_TARGET_UPDATE,
         stochastic: bool = False,
+        violation_penalty: float = -10.0,
     ) -> None:
         if not _TORCH:
             raise RuntimeError("PyTorch is required for DQNAgent. pip install torch")
@@ -278,6 +290,7 @@ class DQNAgent:
         self.batch_size = batch_size
         self.target_update = target_update
         self.stochastic = stochastic
+        self.violation_penalty = violation_penalty
         self.device = DEVICE
 
         self.q_net = _QNetwork(hidden).to(self.device)
@@ -301,7 +314,7 @@ class DQNAgent:
         n: Optional[int] = None,
         seed: Optional[int] = None,
     ) -> List[float]:
-        env = SchedulerEnv(instructions, self.k, self.stochastic)
+        env = SchedulerEnv(instructions, self.k, self.stochastic, self.violation_penalty)
         episode_rewards: List[float] = []
         eps = DQN_EPSILON_START
         start_episode = 0
@@ -395,14 +408,12 @@ class DQNAgent:
         valid: List[Instruction],
         eps: float,
     ) -> Optional[Instruction]:
-        if not actions:
+        if not valid:
             return None
         if random.random() < eps:
-            pool = valid if valid else actions
-            return random.choice(pool)
-        # Greedy: score all valid (or any) actions
-        candidates = valid if valid else actions
-        return self._best_action(state_feat, env, candidates)
+            return random.choice(valid)
+        # Greedy: score all valid actions
+        return self._best_action(state_feat, env, valid)
 
     @torch.no_grad()
     def _best_action(
@@ -472,12 +483,10 @@ class DQNAgent:
 
         while not env.done:
             valid = env.get_valid_actions()
-            actions = env.get_actions()
             if valid:
                 chosen = self._best_action(state_feat, env, valid)
-            elif actions:
-                chosen = self._best_action(state_feat, env, actions)
             else:
+                chosen = None
                 chosen = None
 
             schedule_out.append((env.cycle, chosen))
@@ -508,12 +517,14 @@ class QLearningAgent:
         alpha: float = TABULAR_ALPHA,
         gamma: float = TABULAR_GAMMA,
         stochastic: bool = False,
+        violation_penalty: float = -10.0,
     ) -> None:
         from collections import defaultdict
         self.k = k
         self.alpha = alpha
         self.gamma = gamma
         self.stochastic = stochastic
+        self.violation_penalty = violation_penalty
         self.Q: Dict = defaultdict(lambda: defaultdict(float))
 
     def train(
@@ -524,7 +535,7 @@ class QLearningAgent:
         n: Optional[int] = None,
         seed: Optional[int] = None,
     ) -> List[float]:
-        env = SchedulerEnv(instructions, self.k, self.stochastic)
+        env = SchedulerEnv(instructions, self.k, self.stochastic, self.violation_penalty)
         episode_rewards: List[float] = []
         eps = TABULAR_EPSILON_START
         n = n or len(instructions)
@@ -539,17 +550,18 @@ class QLearningAgent:
             ep_reward = 0.0
 
             while not done:
-                actions = env.get_actions()
-                n_a = len(actions)
+                valid = env.get_valid_actions()
+                n_a = len(valid)
                 if random.random() < eps or n_a == 0:
                     action_idx = random.randint(0, n_a - 1) if n_a else None
                 else:
                     action_idx = max(range(n_a), key=lambda a: self.Q[state_key][a])
 
-                chosen = actions[action_idx] if action_idx is not None and action_idx < n_a else None
+                chosen = valid[action_idx] if action_idx is not None else None
                 next_feat, reward, done = env.step(chosen)
                 next_key = env._tabular_key()
-                n_next = len(env.get_actions())
+                next_valid = env.get_valid_actions()
+                n_next = len(next_valid)
 
                 if action_idx is not None:
                     max_next = max((self.Q[next_key][a] for a in range(n_next)), default=0.0)
@@ -585,14 +597,12 @@ class QLearningAgent:
 
         while not env.done:
             valid = env.get_valid_actions()
-            actions = env.get_actions()
             state_key = env._tabular_key()
-            pool = valid if valid else actions
-            n_a = len(pool)
+            n_a = len(valid)
 
             if n_a > 0:
                 action_idx = max(range(n_a), key=lambda a: self.Q[state_key][a])
-                chosen = pool[action_idx]
+                chosen = valid[action_idx]
             else:
                 chosen = None
 
@@ -631,10 +641,12 @@ class MDPScheduler:
         n_episodes: int = DQN_EPISODES,
         stochastic: bool = False,
         force_tabular: bool = False,
+        violation_penalty: float = -10.0,
     ) -> None:
         self.k = k
         self.n_episodes = n_episodes
         self.stochastic = stochastic
+        self.violation_penalty = violation_penalty
         self.use_dqn = _TORCH and not force_tabular
         self._agent = None
 
@@ -655,9 +667,17 @@ class MDPScheduler:
         """Train the agent on *instructions*. Returns episode reward list."""
         if self._agent is None:
             if self.use_dqn:
-                self._agent = DQNAgent(k=self.k, stochastic=self.stochastic)
+                self._agent = DQNAgent(
+                    k=self.k,
+                    stochastic=self.stochastic,
+                    violation_penalty=self.violation_penalty,
+                )
             else:
-                self._agent = QLearningAgent(k=self.k, stochastic=self.stochastic)
+                self._agent = QLearningAgent(
+                    k=self.k,
+                    stochastic=self.stochastic,
+                    violation_penalty=self.violation_penalty,
+                )
         
         if self.use_dqn:
             return self._agent.train(instructions, self.n_episodes, verbose=verbose, run_id=run_id, n=n, seed=seed)

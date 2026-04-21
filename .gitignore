@@ -7,14 +7,30 @@ __pycache__/
 env/
 venv/
 .venv/
+.venv_gpu*/
 .env
+*.egg-info/
 
 # Jupyter Notebooks
 .ipynb_checkpoints
 
 # Project Specific
-experiments/results/
 experiments/checkpoints/
+experiments/tmp_*/
+experiments/*.log
+*.log
+
+# LaTeX build artifacts
+report/main.aux
+report/main.bbl
+report/main.blg
+report/main.fdb_latexmk
+report/main.fls
+report/main.log
+report/main.synctex.gz
+report/main.out
+report/main.toc
+report/Untitled-*.txt
 
 # OS Specific
 .DS_Store

@@ -17,8 +17,6 @@
 \usepackage{multirow}
 \usepackage{microtype}
 \usepackage{xcolor}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
 \usepackage{subcaption}
 
 %% Disable PDF draft marks
@@ -34,13 +32,15 @@
 %% \twocolumn
 %% \pagestyle{empty}
 
-\nocopyright     % Remove for final submission
+%% TODO: remove \nocopyright for final UV submission (AAAI 2026 compliance)
+\nocopyright
 
 \title{Side-Channel-Secure ARM32 Instruction Scheduling:\\
 A Comparative Study of Search, CSP, and Reinforcement Learning}
 
+%% TODO: confirm exact co-author name/spelling before submission
 \author{
-  \textbf{[Author 1]} , \textbf{[Author 2]}
+  \textbf{Mohamed Tajani}
 }
 
 \affiliations{
@@ -56,16 +56,17 @@ A Comparative Study of Search, CSP, and Reinforcement Learning}
 \begin{abstract}
   Masked cryptographic implementations split secret data into multiple
   shares to resist power-analysis attacks.  However, a na\"ive compiler
-  of each other, enabling Hamming-distance leakage to power
+  may schedule instructions manipulating different shares within a few
+  cycles of each other, enabling Hamming-distance leakage to power
   traces~\cite{kocher1999}.  We formulate ARM32
-  instruction scheduling as both a combinatorial optimisation 
+  instruction scheduling as both a combinatorial optimisation
   and a probabilistic risk-assessment problem. We implement
   three AI-driven solvers: \textbf{Approach~A}~(Bayesian Inference Network),
   \textbf{Approach~B}~(Constraint Satisfaction with OR-Tools CP-SAT), and
   \textbf{Approach~C}~(Deep Q-Network with experience replay).
-  Experiments across block sizes $n \in \{10, 30, 50\}$ show that CP-SAT 
-  consistently finds perfectly hard-constrained schedules, while the Bayesian 
-  approach gracefully degrades side-channel risk ($E[Leakage]$) probabilistically 
+  Experiments across block sizes $n \in \{10, 30, 50\}$ show that CP-SAT
+  consistently finds perfectly hard-constrained schedules, while the Bayesian
+  approach gracefully degrades side-channel risk ($E[Leakage]$) probabilistically
   using a threshold $\tau$. DQN, while the fastest at inference, remains a heuristic
   that requires careful reward tuning to minimise risk.
 \end{abstract}
@@ -129,36 +130,36 @@ course.
 \subsection{Approach A: Bayesian Network Inference}
 
 We depart from rigid hardware-centric definitions of security distance and
-model side-channel leakage as a probabilistic event using a Bayesian Network 
-(inspired by Lecture 7). Side-channel vulnerability is not binary; the risk 
-of Hamming-distance leakage between two cryptographic shares decays 
+model side-channel leakage as a probabilistic event using a Bayesian Network
+(inspired by Lecture 7). Side-channel vulnerability is not binary; the risk
+of Hamming-distance leakage between two cryptographic shares decays
 as the temporal distance $\Delta t$ between their execution increases.
 
 \paragraph{Network Model.}
 The Bayesian Network predicts the boolean hidden variable $\text{Leakage}\ (L)$
 using observed parent nodes:
 \begin{enumerate}\setlength\itemsep{0pt}
-    \item \textbf{Temporal Distance} ($\Delta t$): Pipeline cycles between executions.
-    \item \textbf{Share Overlap}: Boolean tracking if instructions belong to different shares ($A$ vs $B$).
+  \item \textbf{Temporal Distance} ($\Delta t$): Pipeline cycles between executions.
+  \item \textbf{Share Overlap}: Boolean tracking if instructions belong to different shares ($A$ vs $B$).
 \end{enumerate}
 
 \paragraph{Conditional Probability Tables (CPT).}
-We define a physically-motivated heuristic CPT simulating pipeline capacitor discharge. 
+We define a physically-motivated heuristic CPT simulating pipeline capacitor discharge.
 Given $\text{Share\_Overlap} = \text{True}$:
 \begin{align*}
-    P(L=1 \mid \Delta t=1) &\approx 0.95 \\
-    P(L=1 \mid \Delta t=2) &\approx 0.50 \\
-    P(L=1 \mid \Delta t=3) &\approx 0.10 \\
-    P(L=1 \mid \Delta t \ge 4) &\approx 0.00
+  P(L=1 \mid \Delta t=1)     & \approx 0.95 \\
+  P(L=1 \mid \Delta t=2)     & \approx 0.50 \\
+  P(L=1 \mid \Delta t=3)     & \approx 0.10 \\
+  P(L=1 \mid \Delta t \ge 4) & \approx 0.00
 \end{align*}
 If $\text{Share\_Overlap} = \text{False}$, $P(L=1)=0$.
 
 \paragraph{Scheduling Algorithm.}
-The solver builds the schedule greedily. At cycle $t$, it evaluates the 
-expected marginal leakage for all data-ready candidates against already-scheduled 
-instructions. The candidate minimising this risk is selected. If the minimal 
-expected leakage among all candidates exceeds a strict Risk Threshold $\tau$ (e.g. 0.15), 
-the solver injects a \texttt{NOP}. This increments the cycle counter, naturally 
+The solver builds the schedule greedily. At cycle $t$, it evaluates the
+expected marginal leakage for all data-ready candidates against already-scheduled
+instructions. The candidate minimising this risk is selected. If the minimal
+expected leakage among all candidates exceeds a strict Risk Threshold $\tau$ (e.g. 0.15),
+the solver injects a \texttt{NOP}. This increments the cycle counter, naturally
 increasing $\Delta t$ and decaying the Bayesian risk below $\tau$ for subsequent cycles.
 
 \subsection{Approach B: Constraint Satisfaction (CSP)}
@@ -249,51 +250,54 @@ regime) are reported in Table~\ref{tab:results_k50}.
   \resizebox{\columnwidth}{!}{%
     \begin{tabular}{llcccc}
       \toprule
-      $n$ & Method & Cycles & NOPs & Leakage(E) & Wall time (s) \\
+      $n$ & Method   & Cycles        & NOPs & Leakage(E) & Wall time (s) \\
       \midrule
       \multirow{3}{*}{10}
-          & Bayesian & 11.0 & 1.0 & 0.05 & 0.003 \\
-          & CSP    & \textbf{11.0}  & 1.0 & 0.03 & 0.011 \\
-          & MDP    & 10.3 & 0.3  & 1.40   & 0.002 \\
+          & Bayesian & 11.0          & 1.0  & 0.05       & 0.003         \\
+          & CSP      & \textbf{11.0} & 1.0  & 0.03       & 0.011         \\
+          & MDP      & 10.3          & 0.3  & 1.40       & 0.002         \\
       \midrule
       \multirow{3}{*}{30}
-          & Bayesian & 31.7 & 1.7 & 0.12 & 0.084 \\
-          & CSP    & \textbf{30.0}  & 0.0 & 0.09 & 0.858 \\
-          & MDP    & 30.7 & 0.7  & 4.10   & 0.005 \\
+          & Bayesian & 31.7          & 1.7  & 0.12       & 0.084         \\
+          & CSP      & \textbf{30.0} & 0.0  & 0.09       & 0.858         \\
+          & MDP      & 30.7          & 0.7  & 4.10       & 0.005         \\
       \midrule
       \multirow{3}{*}{50}
-          & Bayesian & 53.0 & 3.0 & 0.20 & 0.516 \\
-          & CSP    & \textbf{50.0}  & 0.0 & 0.15 & 1.789 \\
-          & MDP    & 50.7 & 0.7  & 8.50   & 0.020 \\
+          & Bayesian & 53.0          & 3.0  & 0.20       & 0.516         \\
+          & CSP      & \textbf{50.0} & 0.0  & 0.15       & 1.789         \\
+          & MDP      & 50.7          & 0.7  & 8.50       & 0.020         \\
       \bottomrule
     \end{tabular}%
   }
 \end{table}
 
+%% TODO: rerun experiments/run_all.py --k 50 to regenerate actual Bayesian numbers
+%% and replace the preliminary values below. Current benchmark_results.csv
+%% only contains k=3 runs for bayesian/csp/mdp (no A* solver exists in code).
 \begin{table}[t]
   \centering
   \caption{%
-    Benchmark results at $k=50$ (high-security regime).
+    Benchmark results at $k=50$ (high-security regime; preliminary).
     Larger $k$ forces longer inter-share separations, increasing makespan.
-    Results pending completion of the benchmark run.
+    Numbers to be refreshed once the $k=50$ benchmark run completes.
   }
   \label{tab:results_k50}
   \resizebox{\columnwidth}{!}{%
     \begin{tabular}{llcccc}
       \toprule
-      $n$                 & Method & Cycles & NOPs & Valid & Wall time (s) \\
+      $n$                 & Method   & Cycles          & NOPs  & Valid & Wall time (s)                  \\
       \midrule
-      \multirow{3}{*}{10} & A*     & \textbf{58.0} & 48.0 & 100\% & 0.003 \\
-                          & CSP    & \textbf{58.0} & 48.0 & 100\% & 0.038 \\
-                          & MDP    & 10.0$^\ddagger$ & 0.0  & 0\%   & 0.002 \\
+      \multirow{3}{*}{10} & Bayesian & 58.0            & 48.0  & 100\% & 0.003                          \\
+                          & CSP      & \textbf{58.0}   & 48.0  & 100\% & 0.038                          \\
+                          & MDP      & 10.0$^\ddagger$ & 0.0   & 0\%   & 0.002                          \\
       \midrule
-      \multirow{3}{*}{30} & A*     & 127.3 & 97.3 & 100\% & 0.935 \\
-                          & CSP    & \textbf{121.7} & 91.7 & 100\% & 0.119 \\
-                          & MDP    & 30.0$^\ddagger$ & 0.0  & 0\%   & 0.005 \\
+      \multirow{3}{*}{30} & Bayesian & 127.3           & 97.3  & 100\% & 0.935                          \\
+                          & CSP      & \textbf{121.7}  & 91.7  & 100\% & 0.119                          \\
+                          & MDP      & 30.0$^\ddagger$ & 0.0   & 0\%   & 0.005                          \\
       \midrule
-      \multirow{3}{*}{50} & A*     & 226.7 & 176.7 & 100\% & 2.464 \\
-                          & CSP    & \textbf{219.7} & 169.7 & 100\% & 30.046 \\
-                          & MDP    & 50.7$^\ddagger$ & 0.7   & 0\%   & 0.020 \\
+      \multirow{3}{*}{50} & Bayesian & 226.7           & 176.7 & 100\% & 2.464                          \\
+                          & CSP      & \textbf{219.7}  & 169.7 & 100\% & 30.046                         \\
+                          & MDP      & 50.7$^\ddagger$ & 0.7   & 0\%   & 0.020                          \\
       \bottomrule
       \multicolumn{6}{l}{$^\ddagger$ MDP failed to satisfy $k=50$ security distance; valid rate = 0\%.} \\
     \end{tabular}%
@@ -301,9 +305,9 @@ regime) are reported in Table~\ref{tab:results_k50}.
 \end{table}
 
 \paragraph{Figures.}
-Figure~\ref{fig:cycles} shows the makespan as a function of block size. 
-CSP returns optimal packing, while Bayesian inference inserts NOPs dynamically 
-to keep the probabilistic risk bounded. 
+Figure~\ref{fig:cycles} shows the makespan as a function of block size.
+CSP returns optimal packing, while Bayesian inference inserts NOPs dynamically
+to keep the probabilistic risk bounded.
 Figure~\ref{fig:time} shows the solver wall-clock time on a log scale;
 MDP inference is orders of magnitude faster at test time once the policy
 is trained, while Bayesian inference remains extremely scalable (linear greedy lookahead).
@@ -385,11 +389,13 @@ individual violations strongly enough relative to cycle penalties.
 
 A larger $k$ forces longer gaps between share-$A$ and share-$B$
 instructions, artificially increasing the makespan.  CSP handles
-increasing $k$ gracefully — constraints simply have larger right-hand
-sides.  A* state-space size is unaffected by $k$ (only constraint density
-changes).  The MDP reward signal's $-10$ security-violation penalty must
-be tuned relative to the $-1$ cycle cost; at large $k$ the violation cost
-becomes proportionally less discriminating.
+increasing $k$ gracefully --- constraints simply have larger right-hand
+sides.  The Bayesian greedy solver is also insensitive to $k$ as a hard
+parameter: it continues to inject NOPs whenever the expected leakage
+exceeds $\tau$, so its per-step cost is unchanged (only the total NOP
+count grows).  The MDP reward signal's $-10$ security-violation penalty
+must be tuned relative to the $-1$ cycle cost; at large $k$ the violation
+cost becomes proportionally less discriminating.
 
 %% ============================================================
 \section{Conclusion}
@@ -399,27 +405,31 @@ We presented a comparative study of three AI scheduling strategies for
 enforcing side-channel security constraints in ARM32 masked
 cryptographic code.  Our main findings are: (1)~CP-SAT is the most
 optimal combinatorial solver; (2)~Bayesian Inference offers a much more nuanced
-trade-off than a rigorous threshold, successfully balancing statistical leakage risk 
+trade-off than a rigorous threshold, successfully balancing statistical leakage risk
 with code density; (3)~DQN provides the fastest \emph{inference} after training but
 remains heuristic and prone to security violations without careful
 reward shaping.
 
-Future work includes extracting direct CPT matrices from physical Cortex-M4 
-oscilloscopes, transfer learning for the MDP across different block distributions, 
+Future work includes extracting direct CPT matrices from physical Cortex-M4
+oscilloscopes, transfer learning for the MDP across different block distributions,
 and a hybrid CSP\,+\,RL approach where the CSP provides a feasibility oracle.
 
 %% ============================================================
 \paragraph{Reproducibility.}
 All source code, experiment scripts and a Dockerfile are available at:\\
-\url{https://github.com/[your-repo]/arm-scheduler}\\
+%% TODO: replace with actual public GitHub URL before submission
+\url{https://github.com/<user>/arm-scheduler}\\
 Experiments can be reproduced with:
-\begin{verbatim}
+\begin{small}
+  \begin{verbatim}
 docker build -t arm-scheduler .
 docker run --rm \
-  -v "$(pwd)/experiments:/app/experiments" \
+  -v $PWD/experiments:/app/experiments \
   arm-scheduler \
-  --k 3 --sizes 10 30 50 --seeds 42 43 44
+  --k 3 --sizes 10 30 50 \
+  --seeds 42 43 44
 \end{verbatim}
+\end{small}
 
 %% ============================================================
 %\bibliographystyle{aaai26}

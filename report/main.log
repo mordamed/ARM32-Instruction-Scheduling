@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.27)  6 APR 2026 01:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.27)  21 APR 2026 20:37
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -198,38 +198,6 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
-) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/algorithms\algorithm.sty
-Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating environment
- (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
-Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count303
-\float@exts=\toks25
-\float@box=\box56
-\@float@everytoks=\toks26
-\@floatcapt=\box57
-) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
-Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
-)
-\@float@every@algorithm=\toks27
-\c@algorithm=\count304
-) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algpseudocode.sty
-Package: algpseudocode 
- (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algorithmicx.sty
-Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
-
-Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
-\c@ALG@line=\count305
-\c@ALG@rem=\count306
-\c@ALG@nested=\count307
-\ALG@tlm=\skip58
-\ALG@thistlm=\skip59
-\c@ALG@Lnr=\count308
-\c@ALG@blocknr=\count309
-\c@ALG@storecount=\count310
-\c@ALG@tmpcounter=\count311
-\ALG@tmplength=\skip60
-)
-Document Style - pseudocode environments for use with the `algorithmicx' style
 ) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/caption\subcaption.sty
 Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
@@ -246,21 +214,20 @@ Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
 \caption@hangindent=\dimen182
 Package caption Info: Standard document class detected.
 )
-\c@caption@flags=\count312
-\c@continuedfloat=\count313
-Package caption Info: float package is loaded.
+\c@caption@flags=\count303
+\c@continuedfloat=\count304
 )
 Package caption Info: New subtype `subfigure' on input line 238.
-\c@subfigure=\count314
+\c@subfigure=\count305
 Package caption Info: New subtype `subtable' on input line 238.
-\c@subtable=\count315
+\c@subtable=\count306
 )
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 51.
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 ) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count316
+\l__color_backend_stack_int=\count307
 ) (main.aux)
 \openout1 = `main.aux'.
 
@@ -280,17 +247,17 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 51.
 LaTeX Font Info:    ... okay on input line 51.
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count317
+\scratchcounter=\count308
 \scratchdimen=\dimen183
-\scratchbox=\box58
-\nofMPsegments=\count318
-\nofMParguments=\count319
-\everyMPshowfont=\toks28
-\MPscratchCnt=\count320
+\scratchbox=\box56
+\nofMPsegments=\count309
+\nofMParguments=\count310
+\everyMPshowfont=\toks25
+\MPscratchCnt=\count311
 \MPscratchDim=\dimen184
-\MPnumerator=\count321
-\makeMPintoPDFobject=\count322
-\everyMPtoPDFconversion=\toks29
+\MPnumerator=\count312
+\makeMPintoPDFobject=\count313
+\everyMPtoPDFconversion=\toks26
 ) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
@@ -319,29 +286,43 @@ File: mt-ptm.cfg 2006/04/20 v1.7 microtype config. file: Times (RS)
 )
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-\c@eqfn=\count323
-\titlearea=\box59
-\actualheight=\skip61
+\c@eqfn=\count314
+\titlearea=\box57
+\actualheight=\skip58
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-cmr.cfg
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 66.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 67.
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 ) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 66.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 67.
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 93.
- (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
+Underfull \hbox (badness 5147) in paragraph at lines 57--72
+\OT1/ptm/m/n/9 (+20) into mul-ti-ple shares to re-sist power-analysis at-tacks.
+ []
+
+
+Underfull \hbox (badness 2486) in paragraph at lines 57--72
+\OT1/ptm/m/n/9 (+20) How-ever, a na[]^^Pve com-piler may sched-ule in-struc-tions
+ []
+
+
+Underfull \hbox (badness 2990) in paragraph at lines 57--72
+\OT1/ptm/m/n/9 (+20) ma-nip-u-lat-ing dif-fer-ent shares within a few cy-cles of
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 94.
+(C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 93.
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 94.
  (C:\Users\tajani\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ) [1{C:/Users/tajani/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
@@ -349,70 +330,58 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 184--187
+Underfull \hbox (badness 10000) in paragraph at lines 185--188
  \OT1/ptm/b/n/10 (+20) Python-constraint fall-back. \OT1/ptm/m/n/10 (+20) When OR-Tools is
  []
 
 
-Underfull \hbox (badness 7832) in paragraph at lines 184--187
+Underfull \hbox (badness 7832) in paragraph at lines 185--188
 \OT1/ptm/m/n/10 (+20) ab-sent, an it-er-a-tive $\OML/cmm/m/it/10 T[]$\OT1/ptm/m/n/10 (+20) -tightening loop with the
  []
 
 
-Underfull \hbox (badness 5726) in paragraph at lines 184--187
+Underfull \hbox (badness 5726) in paragraph at lines 185--188
 \OT1/pcr/m/n/10 python-constraint \OT1/ptm/m/n/10 (+20) back-track-ing solver is used,
  []
 
 <../experiments/results/fig1_cycles.png, id=18, 505.89pt x 289.08pt>
 File: ../experiments/results/fig1_cycles.png Graphic file (type png)
 <use ../experiments/results/fig1_cycles.png>
-Package pdftex.def Info: ../experiments/results/fig1_cycles.png  used on input line 313.
+Package pdftex.def Info: ../experiments/results/fig1_cycles.png  used on input line 317.
 (pdftex.def)             Requested size: 239.39438pt x 136.79832pt.
 <../experiments/results/fig2_time.png, id=20, 505.89pt x 289.08pt>
 File: ../experiments/results/fig2_time.png Graphic file (type png)
 <use ../experiments/results/fig2_time.png>
-Package pdftex.def Info: ../experiments/results/fig2_time.png  used on input line 320.
+Package pdftex.def Info: ../experiments/results/fig2_time.png  used on input line 324.
 (pdftex.def)             Requested size: 239.39438pt x 136.79832pt.
 <../experiments/results/fig4_learning_curve.png, id=21, 505.89pt x 252.945pt>
 File: ../experiments/results/fig4_learning_curve.png Graphic file (type png)
 <use ../experiments/results/fig4_learning_curve.png>
-Package pdftex.def Info: ../experiments/results/fig4_learning_curve.png  used on input line 327.
+Package pdftex.def Info: ../experiments/results/fig4_learning_curve.png  used on input line 331.
 (pdftex.def)             Requested size: 239.39438pt x 119.69855pt.
-<../experiments/results/fig5_gantt_csp.png, id=22, 2095.83pt x 361.35pt>
+<../experiments/results/fig5_gantt_csp.png, id=22, 722.7pt x 361.35pt>
 File: ../experiments/results/fig5_gantt_csp.png Graphic file (type png)
 <use ../experiments/results/fig5_gantt_csp.png>
-Package pdftex.def Info: ../experiments/results/fig5_gantt_csp.png  used on input line 333.
-(pdftex.def)             Requested size: 239.39438pt x 41.27042pt.
-[2] [3 <../experiments/results/fig1_cycles.png> <../experiments/results/fig2_time.png> <../experiments/results/fig4_learning_curve.png>]
-Overfull \hbox (24.60562pt too wide) in paragraph at lines 422--422
-[]  \OT1/pcr/m/n/10 -v "$(pwd)/experiments:/app/experiments" \[] 
- []
-
-
-Overfull \hbox (6.60562pt too wide) in paragraph at lines 422--422
-[]  \OT1/pcr/m/n/10 --k 3 --sizes 10 30 50 --seeds 42 43 44[] 
- []
-
-(main.bbl) [4
-
- <../experiments/results/fig5_gantt_csp.png>] (main.aux)
+Package pdftex.def Info: ../experiments/results/fig5_gantt_csp.png  used on input line 337.
+(pdftex.def)             Requested size: 239.39438pt x 119.698pt.
+[2] [3 <../experiments/results/fig1_cycles.png> <../experiments/results/fig2_time.png> <../experiments/results/fig4_learning_curve.png>] (main.bbl) [4 <../experiments/results/fig5_gantt_csp.png>] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 8350 strings out of 467867
- 135552 string characters out of 5417850
- 598962 words of memory out of 5000000
- 36871 multiletter control sequences out of 15000+600000
- 662113 words of font info for 252 fonts, out of 8000000 for 9000
+ 7683 strings out of 467867
+ 124976 string characters out of 5417850
+ 588777 words of memory out of 5000000
+ 36235 multiletter control sequences out of 15000+600000
+ 662026 words of font info for 244 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 67i,11n,77p,1041b,308s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 67i,11n,77p,1041b,306s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (4 pages, 392339 bytes).
+Output written on main.pdf (4 pages, 412217 bytes).
 PDF statistics:
  90 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 49173 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 49685 words of extra memory for PDF output out of 51595 (max. 10000000)
 
