@@ -20,10 +20,21 @@ Usage
     # smoke test (very fast, no real training)
     python experiments/rerun_mdp_tuned.py --episodes 50 --sizes 10 --seeds 42
 
-    # full rerun at n=10 (≈18 min on the reference hardware)
-    python experiments/rerun_mdp_tuned.py --sizes 10 --seeds 42 43 44
+    # default: full rerun at n=10/30/50, 3 seeds, penalty=-100
+    # GPU budget estimate (Tesla T4 / P100 reference):
+    #   n=10  ≈ 22 min/seed     ->  ~1.1 h
+    #   n=30  ≈ 1 h/seed        ->  ~3.0 h
+    #   n=50  ≈ 1.7 h/seed      ->  ~5.1 h
+    #   total ≈ 9 h end-to-end (single penalty)
+    python experiments/rerun_mdp_tuned.py
 
-    # custom penalty sweep
+    # restrict to n=10 (legacy mode, ~1 h on GPU)
+    python experiments/rerun_mdp_tuned.py --sizes 10
+
+    # cheaper: scale penalty with n (no episode cap change)
+    python experiments/rerun_mdp_tuned.py --sizes 30 --penalty -100 --seeds 42
+
+    # custom penalty sweep at n=10
     python experiments/rerun_mdp_tuned.py --penalty -50 -100 -200 \\
         --sizes 10 --seeds 42
 
@@ -64,8 +75,9 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--k", type=int, default=3,
                    help="Security distance (same as main benchmark).")
-    p.add_argument("--sizes", type=int, nargs="+", default=[10],
-                   help="Block sizes — start with 10 to keep compute bounded.")
+    p.add_argument("--sizes", type=int, nargs="+", default=[10, 30, 50],
+                   help="Block sizes to ablate over. Default mirrors the main "
+                        "benchmark; expect ~9 h GPU end-to-end at penalty=-100.")
     p.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44],
                    help="Same seeds as main benchmark for direct comparison.")
     p.add_argument("--episodes", type=int, default=5_000,

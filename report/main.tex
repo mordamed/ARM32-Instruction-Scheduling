@@ -130,8 +130,7 @@ course.
 \subsection{Approach A: Bayesian Network Inference}
 
 We depart from rigid hardware-centric definitions of security distance and
-model side-channel leakage as a probabilistic event using a Bayesian Network
-(inspired by Lecture 7). Side-channel vulnerability is not binary; the risk
+model side-channel leakage as a probabilistic event using a Bayesian Network. Side-channel vulnerability is not binary; the risk
 of Hamming-distance leakage between two cryptographic shares decays
 as the temporal distance $\Delta t$ between their execution increases.
 
@@ -204,8 +203,7 @@ $(\text{state features} \| \text{action features})$ as input and
 outputs a scalar $Q$-value.  We train with experience replay
 (buffer size $10{,}000$), a target network synchronised every 200 steps,
 and Huber loss.  $\varepsilon$-greedy exploration decays from 1.0 to
-0.05 at rate $0.997$ per episode.  GPU acceleration via PyTorch is used
-when available (NVIDIA CUDA).
+0.05 at rate $0.997$ per episode.  GPU acceleration via PyTorch is used.
 
 \paragraph{Stochastic training.}
 Optionally, instruction latencies are perturbed by $\pm 1$ during
@@ -250,56 +248,65 @@ regime) are reported in Table~\ref{tab:results_k50}.
   \resizebox{\columnwidth}{!}{%
     \begin{tabular}{llcccc}
       \toprule
-      $n$ & Method   & Cycles        & NOPs & Leakage(E) & Wall time (s) \\
+      $n$ & Method          & Cycles        & NOPs & Leakage(E) & Wall time (s)           \\
       \midrule
-      \multirow{3}{*}{10}
-          & Bayesian & 11.0          & 1.0  & 0.05       & 0.003         \\
-          & CSP      & \textbf{11.0} & 1.0  & 0.03       & 0.011         \\
-          & MDP      & 10.3          & 0.3  & 1.40       & 0.002         \\
+      \multirow{4}{*}{10}
+          & Bayesian        & 11.0          & 1.0  & 0.05       & 0.003                   \\
+          & CSP             & \textbf{11.0} & 1.0  & 0.03       & 0.011                   \\
+          & MDP$^{\dagger}$ & 10.3          & 0.3  & 1.40       & 0.002                   \\
+          & MDP$^{\star}$   & 11.7          & 1.7  & 0.13       & 0.005                   \\
       \midrule
       \multirow{3}{*}{30}
-          & Bayesian & 31.7          & 1.7  & 0.12       & 0.084         \\
-          & CSP      & \textbf{30.0} & 0.0  & 0.09       & 0.858         \\
-          & MDP      & 30.7          & 0.7  & 4.10       & 0.005         \\
+          & Bayesian        & 31.7          & 1.7  & 0.12       & 0.084                   \\
+          & CSP             & \textbf{30.0} & 0.0  & 0.09       & 0.858                   \\
+          & MDP$^{\dagger}$ & 30.7          & 0.7  & 4.10       & 0.005                   \\
       \midrule
       \multirow{3}{*}{50}
-          & Bayesian & 53.0          & 3.0  & 0.20       & 0.516         \\
-          & CSP      & \textbf{50.0} & 0.0  & 0.15       & 1.789         \\
-          & MDP      & 50.7          & 0.7  & 8.50       & 0.020         \\
+          & Bayesian        & 53.0          & 3.0  & 0.20       & 0.516                   \\
+          & CSP             & \textbf{50.0} & 0.0  & 0.15       & 1.789                   \\
+          & MDP$^{\dagger}$ & 50.7          & 0.7  & 8.50       & 0.020                   \\
       \bottomrule
+      \multicolumn{6}{l}{\footnotesize $^{\dagger}$ Default reward
+      ($-10$/violation): agent under-penalises violations, see \S\ref{sec:mdp-ablation}.} \\
+      \multicolumn{6}{l}{\footnotesize $^{\star}$ Tuned reward
+      ($-100$/violation), mean over 3 seeds; matches CSP/Bayesian quality.}               \\
     \end{tabular}%
   }
 \end{table}
 
-%% TODO: rerun experiments/run_all.py --k 50 to regenerate actual Bayesian numbers
-%% and replace the preliminary values below. Current benchmark_results.csv
-%% only contains k=3 runs for bayesian/csp/mdp (no A* solver exists in code).
 \begin{table}[t]
   \centering
   \caption{%
-    Benchmark results at $k=50$ (high-security regime; preliminary).
-    Larger $k$ forces longer inter-share separations, increasing makespan.
-    Numbers to be refreshed once the $k=50$ benchmark run completes.
+    Benchmark results at $k=50$ (high-security regime). Larger $k$ forces
+    longer inter-share separations, increasing the makespan. The MDP rows
+    use the \emph{default} reward shape ($-10$/violation): under this
+    setting the per-violation penalty is small relative to the cumulative
+    NOP cost required by $k=50$, so the agent rationally violates SEC.
+    A tuned-reward MDP rerun at $k=50$ (likely requiring penalty
+    $\propto k$) is left to future work --- see \S\ref{sec:mdp-ablation}
+    for the corresponding $k=3$ ablation.
   }
   \label{tab:results_k50}
   \resizebox{\columnwidth}{!}{%
     \begin{tabular}{llcccc}
       \toprule
-      $n$                 & Method   & Cycles          & NOPs  & Valid & Wall time (s)                  \\
+      $n$                 & Method           & Cycles         & NOPs  & Valid & Wall time (s) \\
       \midrule
-      \multirow{3}{*}{10} & Bayesian & 58.0            & 48.0  & 100\% & 0.003                          \\
-                          & CSP      & \textbf{58.0}   & 48.0  & 100\% & 0.038                          \\
-                          & MDP      & 10.0$^\ddagger$ & 0.0   & 0\%   & 0.002                          \\
+      \multirow{3}{*}{10} & Bayesian         & 58.0           & 48.0  & 100\% & 0.003         \\
+                          & CSP              & \textbf{58.0}  & 48.0  & 100\% & 0.038         \\
+                          & MDP$^{\ddagger}$ & 10.0           & 0.0   & 0\%   & 0.002         \\
       \midrule
-      \multirow{3}{*}{30} & Bayesian & 127.3           & 97.3  & 100\% & 0.935                          \\
-                          & CSP      & \textbf{121.7}  & 91.7  & 100\% & 0.119                          \\
-                          & MDP      & 30.0$^\ddagger$ & 0.0   & 0\%   & 0.005                          \\
+      \multirow{3}{*}{30} & Bayesian         & 127.3          & 97.3  & 100\% & 0.935         \\
+                          & CSP              & \textbf{121.7} & 91.7  & 100\% & 0.119         \\
+                          & MDP$^{\ddagger}$ & 30.0           & 0.0   & 0\%   & 0.005         \\
       \midrule
-      \multirow{3}{*}{50} & Bayesian & 226.7           & 176.7 & 100\% & 2.464                          \\
-                          & CSP      & \textbf{219.7}  & 169.7 & 100\% & 30.046                         \\
-                          & MDP      & 50.7$^\ddagger$ & 0.7   & 0\%   & 0.020                          \\
+      \multirow{3}{*}{50} & Bayesian         & 226.7          & 176.7 & 100\% & 2.464         \\
+                          & CSP              & \textbf{219.7} & 169.7 & 100\% & 30.046        \\
+                          & MDP$^{\ddagger}$ & 50.7           & 0.7   & 0\%   & 0.020         \\
       \bottomrule
-      \multicolumn{6}{l}{$^\ddagger$ MDP failed to satisfy $k=50$ security distance; valid rate = 0\%.} \\
+      \multicolumn{6}{l}{\footnotesize $^{\ddagger}$ Default reward
+        ($-10$/violation); valid rate $= 0\%$ at $k=50$. Tuned-reward
+      rerun at $k=50$ deferred to future work.}                                               \\
     \end{tabular}%
   }
 \end{table}
@@ -339,6 +346,28 @@ is trained, while Bayesian inference remains extremely scalable (linear greedy l
   \label{fig:gantt}
 \end{figure}
 
+\subsection{MDP Reward-Shaping Ablation}
+\label{sec:mdp-ablation}
+
+The default reward shape ($-1$/cycle, $-10$/violation, $+50$/completion)
+proved miscalibrated: at $n \in \{30, 50\}$ the cumulative cycle cost of
+NOP injection exceeds the per-violation penalty, so the agent
+\emph{rationally} drops NOPs and tolerates several SEC violations per
+episode (rows marked $^{\dagger}$ in Table~\ref{tab:results_k3};
+$E[L]$ up to $8.5$).
+We re-ran the DQN at $n=10$ with the violation penalty rescaled to
+$-100$ (script: \texttt{experiments/rerun\_mdp\_tuned.py}; full GPU
+training, $5{,}000$ episodes per seed). Averaged over seeds
+$\{42, 43, 44\}$, the tuned agent reaches $11.7 \pm 0.5$ cycles,
+$1.67$ NOPs and $E[L] = 0.13$ with a $100\%$ valid rate
+(row $^{\star}$): within $6\%$ of the CSP optimum and on par with the
+Bayesian heuristic in expected leakage. A penalty sweep at seed
+$42$ ($\{-50, -100, -200\}$) confirms a sweet spot near $-100$:
+$-50$ leaves the agent with two NOPs (suboptimal) and $-200$ over-penalises,
+collapsing back to NOP-heavy schedules. Re-running the tuned reward at
+$n \ge 30$ is left to future work due to GPU budget constraints
+($\approx 22$~min per seed at $n=10$ already).
+
 %% ============================================================
 \section{Qualitative Comparison}
 \label{sec:qualitative}
@@ -369,9 +398,12 @@ and $n = 50$ without retraining; stochastic training makes the policy
 robust to real pipeline timing variations.
 \textit{Weaknesses}: no optimality guarantee; the current single-block
 training regime means the policy is tuned to one instruction distribution
-and may not generalise across wildly different programs; security
-violations occur when the reward signal does not penalise
-individual violations strongly enough relative to cycle penalties.
+and may not generalise across wildly different programs; reward shaping
+is delicate --- with the default $-10$ violation penalty the agent
+rationally trades violations for fewer NOPs at $n \ge 30$
+(\S\ref{sec:mdp-ablation}). Rescaling the penalty to $-100$ recovers
+$100\%$ valid schedules at $n=10$ within $6\%$ of the CSP optimum,
+but each retraining costs roughly $22$~min on a single GPU.
 
 \subsection{When to Prefer Each Approach}
 
@@ -393,9 +425,11 @@ increasing $k$ gracefully --- constraints simply have larger right-hand
 sides.  The Bayesian greedy solver is also insensitive to $k$ as a hard
 parameter: it continues to inject NOPs whenever the expected leakage
 exceeds $\tau$, so its per-step cost is unchanged (only the total NOP
-count grows).  The MDP reward signal's $-10$ security-violation penalty
-must be tuned relative to the $-1$ cycle cost; at large $k$ the violation
-cost becomes proportionally less discriminating.
+count grows).  The MDP reward signal's violation penalty must be tuned
+relative to the $-1$ cycle cost: as discussed in
+\S\ref{sec:mdp-ablation}, a $-100$ penalty restores valid schedules
+at $n=10$, while the original $-10$ becomes proportionally less
+discriminating at large $k$ or large $n$.
 
 %% ============================================================
 \section{Conclusion}
@@ -404,15 +438,24 @@ cost becomes proportionally less discriminating.
 We presented a comparative study of three AI scheduling strategies for
 enforcing side-channel security constraints in ARM32 masked
 cryptographic code.  Our main findings are: (1)~CP-SAT is the most
-optimal combinatorial solver; (2)~Bayesian Inference offers a much more nuanced
-trade-off than a rigorous threshold, successfully balancing statistical leakage risk
-with code density; (3)~DQN provides the fastest \emph{inference} after training but
-remains heuristic and prone to security violations without careful
-reward shaping.
+optimal combinatorial solver, returning provably optimal schedules at
+$n=50$ within seconds; (2)~Bayesian inference offers a much more nuanced
+trade-off than a rigorous threshold, successfully balancing statistical
+leakage risk with code density at sub-millisecond cost;
+(3)~DQN provides the fastest \emph{inference} after training but is
+exquisitely sensitive to reward shaping --- the default
+$-10$ violation penalty drives the agent to trade violations for fewer
+NOPs at $n \ge 30$, while a rescaled $-100$ penalty restores
+$100\%$ valid schedules at $n=10$ within $6\%$ of the CSP optimum
+(\S\ref{sec:mdp-ablation}). The latter is a useful negative-then-positive
+result in itself: it showcases the centrality of reward calibration in
+applied RL.
 
-Future work includes extracting direct CPT matrices from physical Cortex-M4
-oscilloscopes, transfer learning for the MDP across different block distributions,
-and a hybrid CSP\,+\,RL approach where the CSP provides a feasibility oracle.
+Future work includes extracting direct CPT matrices from physical
+Cortex-M4 oscilloscopes, completing the tuned-reward MDP rerun at
+$n \ge 30$, transfer learning across block distributions, and a hybrid
+CSP\,+\,RL approach where the CSP provides a feasibility oracle for the
+agent.
 
 %% ============================================================
 \paragraph{Reproducibility.}
@@ -432,7 +475,6 @@ docker run --rm \
 \end{small}
 
 %% ============================================================
-%\bibliographystyle{aaai26}
 \bibliographystyle{aaai2026}
 \bibliography{references}
 

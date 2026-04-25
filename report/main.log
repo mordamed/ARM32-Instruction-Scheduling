@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.27)  21 APR 2026 20:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.27)  25 APR 2026 17:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -330,40 +330,45 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 185--188
+Underfull \hbox (badness 10000) in paragraph at lines 184--187
  \OT1/ptm/b/n/10 (+20) Python-constraint fall-back. \OT1/ptm/m/n/10 (+20) When OR-Tools is
  []
 
 
-Underfull \hbox (badness 7832) in paragraph at lines 185--188
+Underfull \hbox (badness 7832) in paragraph at lines 184--187
 \OT1/ptm/m/n/10 (+20) ab-sent, an it-er-a-tive $\OML/cmm/m/it/10 T[]$\OT1/ptm/m/n/10 (+20) -tightening loop with the
  []
 
 
-Underfull \hbox (badness 5726) in paragraph at lines 185--188
+Underfull \hbox (badness 5726) in paragraph at lines 184--187
 \OT1/pcr/m/n/10 python-constraint \OT1/ptm/m/n/10 (+20) back-track-ing solver is used,
  []
 
 <../experiments/results/fig1_cycles.png, id=18, 505.89pt x 289.08pt>
 File: ../experiments/results/fig1_cycles.png Graphic file (type png)
 <use ../experiments/results/fig1_cycles.png>
-Package pdftex.def Info: ../experiments/results/fig1_cycles.png  used on input line 317.
+Package pdftex.def Info: ../experiments/results/fig1_cycles.png  used on input line 324.
 (pdftex.def)             Requested size: 239.39438pt x 136.79832pt.
 <../experiments/results/fig2_time.png, id=20, 505.89pt x 289.08pt>
 File: ../experiments/results/fig2_time.png Graphic file (type png)
 <use ../experiments/results/fig2_time.png>
-Package pdftex.def Info: ../experiments/results/fig2_time.png  used on input line 324.
+Package pdftex.def Info: ../experiments/results/fig2_time.png  used on input line 331.
 (pdftex.def)             Requested size: 239.39438pt x 136.79832pt.
 <../experiments/results/fig4_learning_curve.png, id=21, 505.89pt x 252.945pt>
 File: ../experiments/results/fig4_learning_curve.png Graphic file (type png)
 <use ../experiments/results/fig4_learning_curve.png>
-Package pdftex.def Info: ../experiments/results/fig4_learning_curve.png  used on input line 331.
+Package pdftex.def Info: ../experiments/results/fig4_learning_curve.png  used on input line 338.
 (pdftex.def)             Requested size: 239.39438pt x 119.69855pt.
 <../experiments/results/fig5_gantt_csp.png, id=22, 722.7pt x 361.35pt>
 File: ../experiments/results/fig5_gantt_csp.png Graphic file (type png)
 <use ../experiments/results/fig5_gantt_csp.png>
-Package pdftex.def Info: ../experiments/results/fig5_gantt_csp.png  used on input line 337.
+Package pdftex.def Info: ../experiments/results/fig5_gantt_csp.png  used on input line 344.
 (pdftex.def)             Requested size: 239.39438pt x 119.698pt.
+
+Underfull \hbox (badness 6910) in paragraph at lines 352--370
+\OT1/ptm/m/n/10 (+20) The de-fault re-ward shape ($\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1$\OT1/ptm/m/n/10 (+20) /cycle, $\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 10$\OT1/ptm/m/n/10 (+20) /violation,
+ []
+
 [2] [3 <../experiments/results/fig1_cycles.png> <../experiments/results/fig2_time.png> <../experiments/results/fig4_learning_curve.png>] (main.bbl) [4 <../experiments/results/fig5_gantt_csp.png>] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
@@ -371,17 +376,17 @@ L3 programming layer <2026-01-19>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 7683 strings out of 467867
- 124976 string characters out of 5417850
- 588777 words of memory out of 5000000
- 36235 multiletter control sequences out of 15000+600000
- 662026 words of font info for 244 fonts, out of 8000000 for 9000
+ 7707 strings out of 467867
+ 125221 string characters out of 5417850
+ 591798 words of memory out of 5000000
+ 36239 multiletter control sequences out of 15000+600000
+ 663007 words of font info for 258 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 67i,11n,77p,1041b,306s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (4 pages, 412217 bytes).
+ 67i,12n,77p,1041b,360s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/tajani/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (4 pages, 436611 bytes).
 PDF statistics:
- 90 PDF objects out of 1000 (max. 8388607)
+ 100 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 49685 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 51733 words of extra memory for PDF output out of 61914 (max. 10000000)
 
